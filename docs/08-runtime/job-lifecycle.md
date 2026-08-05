@@ -6,13 +6,14 @@
 
 ```mermaid
 stateDiagram-v2
-    [*] --> pending
-    pending --> running
-    pending --> canceled
+    [*] --> queued
+    queued --> running
+    queued --> cancelled
     running --> succeeded
     running --> failed
-    running --> canceled
-    failed --> pending: 명시적 재시도
+    running --> cancelled
+    failed --> queued: 새 retry Job
+    cancelled --> queued: 정책상 허용된 새 retry Job
 ```
 
 실패 Job은 입력 원본이나 다른 성공 후보를 삭제하지 않습니다. Retry는 새 attempt와 `retry_of_job_id`를 가집니다.

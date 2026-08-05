@@ -2,6 +2,8 @@
 
 > 문서 상태: [계획]
 > 구현 상태: AI Singing Voice, Voice Conversion, Vocal Correction, Training, Runtime API 모두 [미구현]
+> 공통 명세: `0.1.0` / `draft-baseline`
+> 명세 기준: `DohaStudio/.github` `main` (`1e4b480c8cbd6e51835f8550e685e9b136d8071d`)
 
 DohaVocal은 DohaMusic의 보컬 AI Provider입니다. AI Singing Voice, Voice Conversion, Vocal Correction, Vocal Dataset, Training, Evaluation과 독립 Runtime을 기술적으로 담당할 계획입니다.
 
@@ -22,9 +24,11 @@ DohaVocal은 Frontend, 사용자 계정, Workspace, Music Project, Lyrics/Music 
 
 ## DohaMusic과의 관계
 
-모든 호출은 DohaMusic Product Service 또는 Workspace Job Orchestrator를 경유합니다. DohaVocal은 DohaAudio나 DohaLM을 직접 호출하지 않으며 다른 Provider도 DohaVocal을 직접 호출하지 않습니다.
+모든 호출은 DohaMusic 제품 서비스와 Workspace·Job Orchestrator를 경유합니다. DohaVocal은 DohaAudio나 DohaLM을 직접 호출하지 않으며 다른 Provider도 DohaVocal을 직접 호출하지 않습니다.
 
 DohaMusic은 사용자·동의·접근 권한·삭제 결정, Recording Take와 작품 버전, 보정 후보 선택, Composition Snapshot, Mix와 Export를 소유합니다. DohaVocal은 승인된 입력에 대한 기술적 보컬 처리와 결과 Metadata를 제공합니다.
+
+`VocalGenerationJob`, `VoiceConversionJob`, `PitchCorrectionJob`, `TimingCorrectionJob`, `VocalCorrectionJob`, `NoiseReductionJob`, `VocalAnalysisJob`, `EnrollmentProcessingJob`은 서로 독립된 Job입니다. 한 Job의 성공이 다른 Job을 자동 실행하지 않으며, 각 Job은 기존 AssetVersion 또는 Artifact를 입력받아 원본을 변경하지 않고 새 파생 AssetVersion 또는 Artifact를 생성합니다.
 
 ```mermaid
 flowchart LR
@@ -66,18 +70,19 @@ Voice Enrollment Sample과 Recording Take는 자동으로 Training Dataset이 �
 
 ## 문서 읽기 순서
 
-1. [DohaStudio 공통 Provider 계약](https://github.com/DohaStudio/.github/blob/develop/docs/specifications/04-provider-contract.md)
-2. [DohaStudio 공통 용어](https://github.com/DohaStudio/.github/blob/develop/docs/specifications/10-common-terms.md)
-3. [프로젝트 개요](docs/00-overview/project-overview.md)
-4. [Repository Boundary](docs/00-overview/repository-boundary.md)
-5. [기능 요구사항](docs/02-requirements/functional-requirements.md)
-6. [System Architecture](docs/03-architecture/system-architecture.md)
-7. [Vocal Asset Lineage](docs/03-architecture/vocal-asset-lineage.md)
-8. [Consent와 권리](docs/05-data/consent-and-rights.md)
-9. [문서 인덱스](docs/index.md)
+1. [DohaStudio 공통 명세 기준선](https://github.com/DohaStudio/.github/tree/main/docs/specifications)
+2. [DohaStudio 공통 Provider 계약](https://github.com/DohaStudio/.github/blob/main/docs/specifications/04-provider-contract.md)
+3. [DohaStudio 공통 용어](https://github.com/DohaStudio/.github/blob/main/docs/specifications/10-common-terms.md)
+4. [프로젝트 개요](docs/00-overview/project-overview.md)
+5. [Repository Boundary](docs/00-overview/repository-boundary.md)
+6. [기능 요구사항](docs/02-requirements/functional-requirements.md)
+7. [System Architecture](docs/03-architecture/system-architecture.md)
+8. [Vocal Asset Lineage](docs/03-architecture/vocal-asset-lineage.md)
+9. [Consent와 권리](docs/05-data/consent-and-rights.md)
+10. [문서 인덱스](docs/index.md)
 
 전체 단계는 [Roadmap](ROADMAP.md), 변경 기록은 [CHANGELOG](CHANGELOG.md), 결정 제안은 [ADR 인덱스](docs/10-decisions/README.md)에서 확인합니다.
 
 ## 라이선스와 상업 이용
 
-Apache-2.0을 코드 라이선스 우선 후보로 검토하지만 아직 승인되지 않았습니다. 현재 저장소는 [라이선스 검토 상태](LICENSE)이며 공개 열람이 사용 허가를 의미하지 않습니다. Dataset, 외부 모델·weight, Adapter, Checkpoint, 생성 결과와 개인 음성의 권리·상업 이용 상태는 각각 별도로 검토합니다.
+이 저장소의 코드와 문서는 [Apache License 2.0](LICENSE)을 따릅니다. Dataset, 개인 음성, Voice Enrollment Sample, Recording Take, 외부 모델, 모델 가중치, Checkpoint, Adapter, 생성 보컬, 변환 보컬, 보정 결과, 평가 샘플, 동의 증적과 제3자 콘텐츠에는 저장소의 Apache-2.0이 적용되지 않으며 각 항목의 별도 권리와 라이선스를 따릅니다.
