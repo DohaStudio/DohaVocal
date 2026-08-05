@@ -1,0 +1,5 @@
+# Generated Content Policy
+
+> 문서 상태: [계획]
+
+생성·변환 결과에는 Provider, 모델, 입력 권한, 생성 시각과 AI 처리 Metadata를 연결합니다. 결과의 상업 이용과 공개 가능 여부는 DohaMusic의 사용자·권리 정책이 결정합니다. DohaVocal은 기술 결과만으로 권리 승인을 부여하지 않습니다.

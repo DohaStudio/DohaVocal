@@ -1,0 +1,14 @@
+DohaVocal License Review Notice
+
+Status: REVIEW REQUIRED
+Preferred candidate for repository code: Apache License 2.0
+
+Copyright (c) 2026 DohaStudio. All rights reserved.
+
+No final open-source license has been approved. Public access does not grant
+permission to use, copy, modify, distribute, train on, or commercially exploit
+the repository contents.
+
+Datasets, external models and weights, user-specific adapters, checkpoints,
+generated results, and personal voice data require separate rights and license
+review regardless of the future repository code license.
