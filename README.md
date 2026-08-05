@@ -66,13 +66,15 @@ Voice Enrollment Sample과 Recording Take는 자동으로 Training Dataset이 �
 
 ## 문서 읽기 순서
 
-1. [프로젝트 개요](docs/00-overview/project-overview.md)
-2. [Repository Boundary](docs/00-overview/repository-boundary.md)
-3. [기능 요구사항](docs/02-requirements/functional-requirements.md)
-4. [System Architecture](docs/03-architecture/system-architecture.md)
-5. [Vocal Asset Lineage](docs/03-architecture/vocal-asset-lineage.md)
-6. [Consent와 권리](docs/05-data/consent-and-rights.md)
-7. [문서 인덱스](docs/index.md)
+1. [DohaStudio 공통 Provider 계약](https://github.com/DohaStudio/.github/blob/develop/docs/specifications/04-provider-contract.md)
+2. [DohaStudio 공통 용어](https://github.com/DohaStudio/.github/blob/develop/docs/specifications/10-common-terms.md)
+3. [프로젝트 개요](docs/00-overview/project-overview.md)
+4. [Repository Boundary](docs/00-overview/repository-boundary.md)
+5. [기능 요구사항](docs/02-requirements/functional-requirements.md)
+6. [System Architecture](docs/03-architecture/system-architecture.md)
+7. [Vocal Asset Lineage](docs/03-architecture/vocal-asset-lineage.md)
+8. [Consent와 권리](docs/05-data/consent-and-rights.md)
+9. [문서 인덱스](docs/index.md)
 
 전체 단계는 [Roadmap](ROADMAP.md), 변경 기록은 [CHANGELOG](CHANGELOG.md), 결정 제안은 [ADR 인덱스](docs/10-decisions/README.md)에서 확인합니다.
 
