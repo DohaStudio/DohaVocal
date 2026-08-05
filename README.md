@@ -41,13 +41,13 @@ flowchart LR
 
 다음은 절대 같은 엔티티로 취급하지 않습니다.
 
-1. Voice Enrollment Sample
-2. Recording Take
-3. Vocal Training Dataset
-4. AI Generated Vocal
-5. Voice Converted Vocal
-6. Processed Vocal Asset
-7. Final Selected Vocal
+1. 음색 등록 Sample(`Voice Enrollment Sample`)
+2. 작품 녹음 Take(`Recording Take`)
+3. Vocal 학습 Dataset
+4. AI 생성 Vocal
+5. 음색 변환 Vocal
+6. 처리된 Vocal Asset
+7. 최종 선택 Vocal
 
 Voice Enrollment Sample과 Recording Take는 자동으로 Training Dataset이 되지 않습니다. Training에는 별도의 명시적 승인과 Dataset Manifest가 필요합니다.
 

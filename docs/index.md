@@ -4,16 +4,16 @@
 
 | 영역 | 문서 |
 |---|---|
-| Overview | [Project](00-overview/project-overview.md), [Scope](00-overview/scope-and-goals.md), [Boundary](00-overview/repository-boundary.md) |
-| Research | [Models](01-research/model-candidates.md), [Dataset](01-research/dataset-strategy.md), [License](01-research/licensing-review.md) |
-| Requirements | [Functional](02-requirements/functional-requirements.md), [Non-functional](02-requirements/non-functional-requirements.md), [Acceptance](02-requirements/acceptance-criteria.md) |
-| Architecture | [System](03-architecture/system-architecture.md), [Provider](03-architecture/provider-contract.md), [Artifact](03-architecture/artifact-contract.md), [Lineage](03-architecture/vocal-asset-lineage.md), [DohaMusic](03-architecture/dohamusic-integration.md) |
-| Models | [Selection](04-models/model-selection-policy.md), [Manifest](04-models/model-manifest-schema.md), [Registry](04-models/model-registry.md) |
-| Data | [Local](05-data/local-data-policy.md), [Manifest](05-data/dataset-manifest-schema.md), [Consent](05-data/consent-and-rights.md), [Lineage](05-data/data-lineage.md) |
-| Training | [Strategy](06-training/training-strategy.md), [Experiments](06-training/experiment-tracking.md) |
-| Evaluation | [Strategy](07-evaluation/evaluation-strategy.md), [Gates](07-evaluation/quality-gates.md) |
-| Runtime | [Overview](08-runtime/runtime-overview.md), [Jobs](08-runtime/job-lifecycle.md), [Errors](08-runtime/error-contract.md) |
-| Security | [Voice](09-security/voice-security-policy.md), [Generated](09-security/generated-content-policy.md), [Artifact](09-security/artifact-security.md) |
-| Decisions | [ADR 인덱스](10-decisions/README.md) |
+| 개요 | [프로젝트](00-overview/project-overview.md), [범위](00-overview/scope-and-goals.md), [경계](00-overview/repository-boundary.md) |
+| 조사 | [모델](01-research/model-candidates.md), [Dataset](01-research/dataset-strategy.md), [라이선스](01-research/licensing-review.md) |
+| 요구사항 | [기능](02-requirements/functional-requirements.md), [비기능](02-requirements/non-functional-requirements.md), [인수 기준](02-requirements/acceptance-criteria.md) |
+| 아키텍처 | [시스템](03-architecture/system-architecture.md), [Provider](03-architecture/provider-contract.md), [Artifact](03-architecture/artifact-contract.md), [계보](03-architecture/vocal-asset-lineage.md), [DohaMusic](03-architecture/dohamusic-integration.md) |
+| 모델 | [선택](04-models/model-selection-policy.md), [Manifest](04-models/model-manifest-schema.md), [Registry](04-models/model-registry.md) |
+| 데이터 | [로컬](05-data/local-data-policy.md), [Manifest](05-data/dataset-manifest-schema.md), [동의](05-data/consent-and-rights.md), [계보](05-data/data-lineage.md) |
+| 학습 | [전략](06-training/training-strategy.md), [실험](06-training/experiment-tracking.md) |
+| 평가 | [전략](07-evaluation/evaluation-strategy.md), [Gate](07-evaluation/quality-gates.md) |
+| Runtime | [개요](08-runtime/runtime-overview.md), [Job](08-runtime/job-lifecycle.md), [오류](08-runtime/error-contract.md) |
+| 보안 | [음성](09-security/voice-security-policy.md), [생성 콘텐츠](09-security/generated-content-policy.md), [Artifact](09-security/artifact-security.md) |
+| 결정 | [ADR 인덱스](10-decisions/README.md) |
 
 상위 문서는 [README](../README.md), [Roadmap](../ROADMAP.md), [CHANGELOG](../CHANGELOG.md)에서 확인합니다.
