@@ -1,4 +1,4 @@
-# Artifact Contract
+# Artifact 계약
 
 > 문서 상태: [제안]
 

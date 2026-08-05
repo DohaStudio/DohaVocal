@@ -1,4 +1,4 @@
-# Acceptance Criteria
+# 인수 기준
 
 > 문서 상태: [계획]
 

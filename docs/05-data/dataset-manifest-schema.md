@@ -1,4 +1,4 @@
-# Dataset Manifest Schema
+# Dataset Manifest Schema 명세
 
 > 문서 상태: [제안]
 

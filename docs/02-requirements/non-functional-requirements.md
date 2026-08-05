@@ -1,4 +1,4 @@
-# Non-functional Requirements
+# 비기능 요구사항
 
 > 문서 상태: [계획]
 

@@ -1,4 +1,4 @@
-# ADR-005: Vocal Processing and DohaMusic Mix Boundary
+# ADR-005: Vocal 처리와 DohaMusic Mix 책임 경계
 
 - 상태: [제안]
 - 작성일: 2026-08-05

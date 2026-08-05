@@ -1,4 +1,4 @@
-# Voice Security Policy
+# 음성 보안 정책
 
 > 문서 상태: [제안]
 

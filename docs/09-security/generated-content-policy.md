@@ -1,4 +1,4 @@
-# Generated Content Policy
+# 생성 콘텐츠 정책
 
 > 문서 상태: [계획]
 

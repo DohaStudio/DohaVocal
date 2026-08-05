@@ -1,4 +1,4 @@
-# Repository Boundary
+# 저장소 책임 경계
 
 > 문서 상태: [계획]
 

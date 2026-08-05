@@ -1,4 +1,4 @@
-# Consent and Rights
+# 동의와 권리
 
 > 문서 상태: [제안]
 

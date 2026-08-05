@@ -1,4 +1,4 @@
-# ADR-003: Vocal Dataset and Consent Policy
+# ADR-003: Vocal Dataset과 동의 정책
 
 - 상태: [제안]
 - 작성일: 2026-08-05

@@ -1,16 +1,16 @@
-# Evaluation Strategy
+# 평가 전략
 
 > 문서 상태: [계획]
 
-## AI Singing Voice
+## AI 가창 음성
 
 음정·박자 정확도, 발음 명료도, 자연스러움, 가사 일치도와 음악 조건 일치도를 평가합니다.
 
-## Voice Conversion
+## 음색 변환
 
 음색 유사도, 내용·발음 보존, artifact, 자연스러움과 권리·동의 상태를 평가합니다.
 
-## Vocal Correction
+## 보컬 보정
 
 보정 전후 Pitch·Timing 차이, 자연스러움, 과도한 Auto-Tune, 노이즈 감소와 원본 손상을 평가합니다.
 

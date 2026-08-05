@@ -1,4 +1,4 @@
-# DohaMusic Integration
+# DohaMusic 연동
 
 > 문서 상태: [계획]
 

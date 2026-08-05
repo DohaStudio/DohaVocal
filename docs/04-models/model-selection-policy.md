@@ -1,4 +1,4 @@
-# Model Selection Policy
+# 모델 선택 정책
 
 > 문서 상태: [계획]
 

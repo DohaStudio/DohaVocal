@@ -1,4 +1,4 @@
-# ADR-002: Provider Contract
+# ADR-002: Provider 계약
 
 - 상태: [제안]
 - 작성일: 2026-08-05
@@ -14,7 +14,7 @@ DohaMusic만 DohaVocal을 호출합니다. DohaVocal은 DohaAudio·DohaLM을 직
 
 ## 이유와 대안
 
-단일 Orchestrator가 사용자 권한, Pipeline과 GPU admission을 일관되게 관리합니다. Provider 직접 호출과 공유 절대 경로 대안은 순환 의존, 배포 결합과 정보 노출을 만듭니다.
+단일 Workspace·Job Orchestrator가 사용자 권한, Job과 GPU admission을 일관되게 관리합니다. Provider 직접 호출과 공유 절대 경로 대안은 순환 의존, 배포 결합과 정보 노출을 만듭니다.
 
 ## 영향
 

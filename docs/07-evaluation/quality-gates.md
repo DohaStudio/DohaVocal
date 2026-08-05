@@ -1,4 +1,4 @@
-# Quality Gates
+# 품질 Gate
 
 > 문서 상태: [계획]
 

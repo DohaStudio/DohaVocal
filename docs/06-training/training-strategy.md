@@ -1,4 +1,4 @@
-# Training Strategy
+# 학습 전략
 
 > 문서 상태: [계획]
 > Training·Fine-tuning: [미구현]

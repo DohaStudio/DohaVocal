@@ -1,4 +1,4 @@
-# Experiment Tracking
+# 실험 추적
 
 > 문서 상태: [계획]
 

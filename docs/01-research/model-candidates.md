@@ -1,4 +1,4 @@
-# Model Candidates
+# 모델 후보
 
 > 문서 상태: [검증 필요]
 

@@ -1,4 +1,4 @@
-# Contributing to DohaVocal
+# DohaVocal 기여 안내
 
 ## 브랜치
 

@@ -1,4 +1,4 @@
-# Functional Requirements
+# 기능 요구사항
 
 > 문서 상태: [계획]
 > 모든 요구사항: [미구현]

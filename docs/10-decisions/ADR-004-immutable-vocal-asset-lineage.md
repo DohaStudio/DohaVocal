@@ -1,4 +1,4 @@
-# ADR-004: Immutable Vocal Asset Lineage
+# ADR-004: 불변 Vocal Asset 계보
 
 - 상태: [제안]
 - 작성일: 2026-08-05

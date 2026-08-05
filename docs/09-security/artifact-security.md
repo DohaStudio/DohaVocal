@@ -1,4 +1,4 @@
-# Artifact Security
+# Artifact 보안
 
 > 문서 상태: [계획]
 

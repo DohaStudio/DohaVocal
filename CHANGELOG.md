@@ -1,6 +1,6 @@
-# Changelog
+# 변경 이력
 
-## [Unreleased]
+## [미출시]
 
 ### 추가
 
@@ -8,6 +8,8 @@
 - Vocal Dataset·Consent, immutable lineage, Provider·Mix Boundary 계약
 - ADR-001~ADR-005 제안
 - Dataset·개인 음성·모델·Artifact Git 보호 정책
+- Markdown 제목과 설명을 한국어 공식 문서 언어 기준에 맞게 정리
+- Job 상태를 DohaStudio 공통 계약의 `pending`, `running`, `succeeded`, `failed`, `canceled`로 정렬
 
 ### 미구현
 

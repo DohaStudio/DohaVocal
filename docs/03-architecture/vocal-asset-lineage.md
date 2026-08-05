@@ -1,4 +1,4 @@
-# Vocal Asset Lineage
+# Vocal Asset 계보
 
 > 문서 상태: [제안]
 

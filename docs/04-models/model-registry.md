@@ -1,4 +1,4 @@
-# Model Registry
+# Model Registry 계획
 
 > 문서 상태: [미구현]
 

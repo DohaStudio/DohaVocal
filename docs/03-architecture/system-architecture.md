@@ -1,4 +1,4 @@
-# System Architecture
+# 시스템 아키텍처
 
 > 문서 상태: [계획]
 

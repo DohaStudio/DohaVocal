@@ -1,4 +1,4 @@
-# Local Data Policy
+# 로컬 데이터 정책
 
 > 문서 상태: [계획]
 > Dataset Migration: [미구현]

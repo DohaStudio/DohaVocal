@@ -1,4 +1,4 @@
-# Dataset Strategy
+# Dataset 전략
 
 > 문서 상태: [계획]
 
