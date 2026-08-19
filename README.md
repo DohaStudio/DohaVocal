@@ -1,13 +1,14 @@
 # DohaVocal
 
-> 문서 상태: [계획]
-> 구현 상태: AI Singing Voice, Voice Conversion, Vocal Correction, Training, Runtime API 모두 [미구현]
+> 문서 상태: [진행 중]
+> Foundation 상태: Runtime Foundation, Provider API Foundation, Fake Provider [구현]
+> 모델 상태: 실제 AI Singing Voice, Voice Conversion, Vocal Correction, Training, Evaluation, Production Runtime [미구현]
 > 공통 명세: `0.1.0` / `draft-baseline`
 > 명세 기준: `DohaStudio/.github` `main` (`1e4b480c8cbd6e51835f8550e685e9b136d8071d`)
 
 DohaVocal은 DohaMusic의 보컬 AI Provider입니다. AI Singing Voice, Voice Conversion, Vocal Correction, Vocal Dataset, Training, Evaluation과 독립 Runtime을 기술적으로 담당할 계획입니다.
 
-현재 저장소는 문서·계약·Architecture bootstrap 단계입니다. 개인 음성, Dataset, 모델, Checkpoint, Runtime 코드와 생성 음원은 포함하지 않습니다.
+현재 저장소에는 공통 Vocal Job 계약, in-memory lifecycle·idempotency, metadata-only Fake Provider와 FastAPI Runtime Foundation이 구현되어 있습니다. Fake Provider는 실제 오디오를 읽거나 쓰지 않으며 모델, GPU, Dataset, Checkpoint와 외부 Provider를 사용하지 않습니다.
 
 ## 책임
 
@@ -16,7 +17,8 @@ DohaVocal은 DohaMusic의 보컬 AI Provider입니다. AI Singing Voice, Voice C
 - Noise Reduction, Breath·Silence Cleanup [계획]
 - Vocal Normalization·Enhancement·Quality Analysis [계획]
 - Vocal Dataset, Training·Fine-tuning·Evaluation [계획]
-- 사용자별 Adapter/Checkpoint, Model Manifest, Runtime API [계획]
+- 사용자별 Adapter/Checkpoint [계획]
+- Model Manifest 계약과 Runtime API Foundation [구현]
 
 ## 비목표
 
@@ -34,7 +36,7 @@ DohaMusic은 사용자·동의·접근 권한·삭제 결정, Recording Take와 
 flowchart LR
     DM[DohaMusic Orchestrator]
     JOB[Vocal Job]
-    DV[DohaVocal Runtime - 미구현]
+    DV[DohaVocal Runtime Foundation - Fake Provider]
     OUT[Derived Vocal Artifact]
     CHOICE[DohaMusic 사용자 선택]
 
@@ -67,6 +69,19 @@ Voice Enrollment Sample과 Recording Take는 자동으로 Training Dataset이 �
 | Vocal Artifact | `DohaArtifacts/vocal` | 금지 |
 | 임시 파일 | `DohaTemp/vocal` | 금지 |
 | Mix·Export·Preview·Snapshot | `DohaArtifacts/music` | DohaVocal 범위 아님 |
+
+Runtime Foundation은 Artifact payload나 로컬 저장 경로에 접근하지 않고 파생 후보의 ID, checksum과 lineage metadata만 in-memory로 생성합니다. Production Artifact Catalog·Resolver 연동은 [미구현]입니다.
+
+## Runtime Foundation 실행
+
+Python 3.12 환경에서 개발 의존성을 설치한 뒤 다음 명령을 사용할 수 있습니다.
+
+```text
+python -m pip install -e ".[dev]"
+dohavocal
+```
+
+기본 개발 주소는 `http://127.0.0.1:8080`이며 `/health`, `/ready`, `/v1/capabilities`, `/v1/jobs`와 Model Manifest 조회 API를 제공합니다. 이 실행 경로는 개발·계약 검증용 Fake Runtime이며 Production Runtime이 아닙니다.
 
 ## 문서 읽기 순서
 

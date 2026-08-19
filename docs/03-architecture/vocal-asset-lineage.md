@@ -1,6 +1,6 @@
 # Vocal Asset 계보
 
-> 문서 상태: [제안]
+> 문서 상태: [부분 구현]
 
 ## 엔티티 구분
 
@@ -29,3 +29,5 @@ recorded_vocal_raw
 ```
 
 원본과 기존 성공 후보를 덮어쓰거나 실패 Job 때문에 삭제하지 않습니다. 모든 파생 결과는 source/parent AssetVersion, processing chain, Provider·Model, 설정, 시각과 checksum을 기록합니다.
+
+Runtime Foundation은 payload를 저장하지 않고 새 `artifact_id`와 `output_asset_version_id` 후보 metadata를 생성합니다. `source_asset_version_id`, `parent_asset_version_id`, `processing_chain_id`, `provider_id`, `model_manifest_id`, immutable settings snapshot, processing type, `job_id`, 생성 시각과 SHA-256 checksum을 기록합니다. 실제 `DohaArtifacts/vocal` 등록과 DohaMusic AssetVersion 생성은 [미구현]이며 DohaMusic 책임 경계를 변경하지 않습니다.

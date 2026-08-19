@@ -18,7 +18,7 @@ DohaMusic만 DohaVocal을 호출합니다. DohaVocal은 DohaAudio·DohaLM을 직
 
 ## 영향
 
-HTTP endpoint와 schema는 아직 `[미구현]`입니다. Local Runner 호환을 단계적으로 허용하되 외부 절대 경로 계약으로 고정하지 않습니다.
+HTTP endpoint와 schema의 Fake Runtime Foundation은 `[구현]`이며 실제 모델을 실행하는 Production Runtime은 `[미구현]`입니다. Local Runner 호환을 단계적으로 허용하되 외부 절대 경로 계약으로 고정하지 않습니다.
 
 ## 재검토
 
