@@ -14,6 +14,9 @@ from dohavocal.domain.jobs import CreateVocalJobRequest
         ("model_path", "C:\\private\\model.bin"),
         ("dataset_path", "/private/dataset"),
         ("path", "C:\\Users\\person\\voice.wav"),
+        ("value", "../private/voice.wav"),
+        ("value", "file:///private/voice.wav"),
+        ("value", "\\\\server\\share\\voice.wav"),
     ],
 )
 def test_sensitive_settings_are_rejected_without_echo(
@@ -49,3 +52,16 @@ def test_absolute_path_cannot_be_disguised_as_an_artifact_id(
 
     assert response.status_code == 422
     assert "C:\\private\\voice.wav" not in response.text
+
+
+@pytest.mark.parametrize(
+    "value",
+    ["artifact://vocal/item-1", "https://example.invalid/schema", "tokenizer-v1"],
+)
+def test_logical_references_are_not_rejected_as_paths(generation_payload, value):
+    payload = deepcopy(generation_payload)
+    payload["settings_snapshot"] = {"reference": value, "tokenizer": "local"}
+
+    request = CreateVocalJobRequest.model_validate(payload)
+
+    assert request.settings_snapshot["reference"] == value

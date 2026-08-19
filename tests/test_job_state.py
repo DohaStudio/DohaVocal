@@ -1,6 +1,8 @@
+from concurrent.futures import ThreadPoolExecutor
+
 import pytest
 
-from dohavocal.domain.errors import InvalidStateTransitionError
+from dohavocal.domain.errors import ErrorDetail, InvalidStateTransitionError
 from dohavocal.domain.jobs import JobStatus
 
 
@@ -10,7 +12,11 @@ def test_queued_to_running_to_succeeded(provider, request_factory):
 
     running = provider.transition(job.job_id, JobStatus.RUNNING, progress_percent=30)
     succeeded = provider.transition(
-        job.job_id, JobStatus.SUCCEEDED, progress_percent=100
+        job.job_id,
+        JobStatus.SUCCEEDED,
+        progress_percent=100,
+        output_asset_version_ids=("asset-version:output",),
+        output_artifact_ids=("artifact:output",),
     )
 
     assert running.status == JobStatus.RUNNING
@@ -28,7 +34,17 @@ def test_running_can_fail_or_cancel(provider, request_factory):
     running_failure = provider.create_job(
         request_factory(settings={"fake_outcome": "running"})
     )
-    failed = provider.transition(running_failure.job_id, JobStatus.FAILED)
+    failed = provider.transition(
+        running_failure.job_id,
+        JobStatus.FAILED,
+        error=ErrorDetail(
+            error_code="TEST_FAILURE",
+            message="테스트 실패",
+            retryable=False,
+            stage="test",
+            details_id="test-failure",
+        ),
+    )
     running_cancel = provider.create_job(
         request_factory(settings={"fake_outcome": "running"})
     )
@@ -50,3 +66,57 @@ def test_terminal_job_rejects_mutation(provider, request_factory, terminal):
 
     with pytest.raises(InvalidStateTransitionError):
         provider.transition(job.job_id, JobStatus.RUNNING)
+
+
+def test_failed_requires_error_and_succeeded_requires_outputs(
+    provider, request_factory
+):
+    failed_candidate = provider.create_job(
+        request_factory(settings={"fake_outcome": "running"})
+    )
+    success_candidate = provider.create_job(
+        request_factory(settings={"fake_outcome": "running"})
+    )
+
+    with pytest.raises(InvalidStateTransitionError):
+        provider.transition(failed_candidate.job_id, JobStatus.FAILED)
+    with pytest.raises(InvalidStateTransitionError):
+        provider.transition(success_candidate.job_id, JobStatus.SUCCEEDED)
+
+
+def test_competing_terminal_transitions_are_atomic(provider, request_factory):
+    running = provider.create_job(request_factory(settings={"fake_outcome": "running"}))
+    failure = ErrorDetail(
+        error_code="TEST_FAILURE",
+        message="테스트 실패",
+        retryable=False,
+        stage="test",
+        details_id="test-failure",
+    )
+
+    def succeed():
+        return provider.transition(
+            running.job_id,
+            JobStatus.SUCCEEDED,
+            progress_percent=100,
+            output_asset_version_ids=("asset-version:output",),
+            output_artifact_ids=("artifact:output",),
+        )
+
+    def fail():
+        return provider.transition(running.job_id, JobStatus.FAILED, error=failure)
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        futures = [executor.submit(succeed), executor.submit(fail)]
+    outcomes = []
+    for future in futures:
+        try:
+            outcomes.append(future.result().status)
+        except InvalidStateTransitionError:
+            outcomes.append("rejected")
+
+    assert outcomes.count("rejected") == 1
+    assert provider.get_job_status(running.job_id).status in {
+        JobStatus.SUCCEEDED,
+        JobStatus.FAILED,
+    }

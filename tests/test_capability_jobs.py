@@ -1,4 +1,7 @@
-from dohavocal.domain.jobs import JobStatus, JobType
+import hashlib
+import json
+
+from dohavocal.domain.jobs import CorrectionType, JobStatus, JobType
 
 
 def test_generation_success_links_lineage_and_manifest(provider, request_factory):
@@ -40,6 +43,86 @@ def test_correction_is_non_destructive_and_settings_snapshot_isolated(
     assert stored.settings_snapshot["strength"]["pitch"] == 0.25
     assert result.output_asset_version_id != result.lineage.source_asset_version_id
     assert result.lineage.processing_types == ("pitch_correction", "de_esser")
+
+
+def test_caller_mutation_cannot_change_stored_settings_or_lineage(
+    provider, request_factory
+):
+    caller_settings = {"bands": [{"gain": 1.0}]}
+    request = request_factory(JobType.VOCAL_CORRECTION, settings=caller_settings)
+    caller_settings["bands"][0]["gain"] = 9.0
+    job = provider.create_job(request)
+    result = provider.get_result(job.job_id)
+    detached = provider.get_result(job.job_id)
+    detached.lineage.settings_snapshot["bands"][0]["gain"] = 8.0
+
+    assert (
+        provider.get_job_status(job.job_id).settings_snapshot["bands"][0]["gain"] == 1.0
+    )
+    assert result.lineage.settings_snapshot["bands"][0]["gain"] == 1.0
+    assert (
+        provider.get_result(job.job_id).lineage.settings_snapshot["bands"][0]["gain"]
+        == 1.0
+    )
+
+
+def test_sequential_lineage_preserves_root_parent_and_processing_chain(
+    provider, request_factory
+):
+    pitch_request = request_factory(JobType.VOCAL_CORRECTION)
+    pitch_job = provider.create_job(pitch_request)
+    pitch_result = provider.get_result(pitch_job.job_id)
+    timing_input = pitch_request.job_input.model_copy(
+        update={
+            "source_asset_version_id": "asset-version:raw-vocal-1",
+            "parent_asset_version_id": pitch_result.output_asset_version_id,
+            "correction_types": (CorrectionType.TIMING,),
+            "processing_chain_id": pitch_result.lineage.processing_chain_id,
+        }
+    )
+    timing_request = request_factory(JobType.VOCAL_CORRECTION).model_copy(
+        update={"job_input": timing_input}
+    )
+    timing_job = provider.create_job(timing_request)
+    timing_result = provider.get_result(timing_job.job_id)
+
+    assert timing_result.lineage.source_asset_version_id == "asset-version:raw-vocal-1"
+    assert timing_result.lineage.parent_asset_version_id == (
+        pitch_result.output_asset_version_id
+    )
+    assert timing_result.lineage.processing_chain_id == (
+        pitch_result.lineage.processing_chain_id
+    )
+    assert timing_result.lineage.processing_types == ("timing_correction",)
+
+
+def test_artifact_checksum_is_canonical_metadata_descriptor_checksum(
+    provider, request_factory
+):
+    request = request_factory(JobType.VOCAL_CORRECTION)
+    job = provider.create_job(request)
+    result = provider.get_result(job.job_id)
+    descriptor = {
+        "schema": "dohavocal.fake-artifact-metadata.v1",
+        "job_id": job.job_id,
+        "capability": request.capability.value,
+        "source_asset_version_id": result.lineage.source_asset_version_id,
+        "parent_asset_version_id": result.lineage.parent_asset_version_id,
+        "processing_chain_id": result.lineage.processing_chain_id,
+        "model_manifest_id": request.model_manifest_id,
+        "settings_snapshot": request.settings_snapshot,
+        "processing_types": result.lineage.processing_types,
+    }
+    expected = hashlib.sha256(
+        json.dumps(
+            descriptor, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+        ).encode()
+    ).hexdigest()
+
+    assert result.payload_present is False
+    assert result.checksum_scope == "metadata_descriptor"
+    assert result.artifact_checksum == expected
+    assert result.lineage.checksum == expected
 
 
 def test_analysis_returns_structured_metadata_without_audio_payload(

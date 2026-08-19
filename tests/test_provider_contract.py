@@ -36,3 +36,4 @@ def test_published_manifest_cannot_be_mutated_through_a_returned_copy(provider):
     assert provider.get_model_manifest(manifest_id).runtime_environment["gpu"] == (
         "not-used"
     )
+    assert detached.artifact_checksum_scope == "fake_manifest_descriptor"

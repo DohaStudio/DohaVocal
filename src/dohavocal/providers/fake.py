@@ -202,6 +202,20 @@ class FakeVocalProvider:
                 f"{job.status.value}에서 {target.value}(으)로 전이할 수 없습니다.",
                 stage="state_transition",
             )
+        if target == JobStatus.FAILED and error is None:
+            raise InvalidStateTransitionError(
+                "STATE_TRANSITION_INVALID",
+                "failed 상태에는 구조화된 error가 필요합니다.",
+                stage="state_transition",
+            )
+        if target == JobStatus.SUCCEEDED and (
+            not output_asset_version_ids or not output_artifact_ids
+        ):
+            raise InvalidStateTransitionError(
+                "STATE_TRANSITION_INVALID",
+                "succeeded 상태에는 검증된 output ID가 필요합니다.",
+                stage="state_transition",
+            )
         now = datetime.now(UTC)
         updates: dict[str, Any] = {"status": target}
         if target == JobStatus.RUNNING:
@@ -217,8 +231,7 @@ class FakeVocalProvider:
         if output_artifact_ids is not None:
             updates["output_artifact_ids"] = output_artifact_ids
         updated = job.model_copy(update=updates)
-        self.jobs.replace(updated)
-        return updated
+        return self.jobs.replace_if_status(updated, job.status)
 
     def _validate_request(self, request: CreateVocalJobRequest) -> None:
         if request.provider_id != self.settings.provider_id:
@@ -256,16 +269,22 @@ class FakeVocalProvider:
     ) -> VocalArtifact:
         artifact_id = str(uuid4())
         output_asset_version_id = str(uuid4())
-        source_asset_version_id = self._source_asset_version(request)
-        parent_asset_version_id = source_asset_version_id
-        processing_chain_id = str(uuid4())
+        source_asset_version_id, parent_asset_version_id = self._lineage_versions(
+            request
+        )
+        processing_chain_id = request.job_input.processing_chain_id or str(uuid4())
         created_at = datetime.now(UTC)
+        processing_types = self._processing_types(request)
         content_descriptor = {
+            "schema": "dohavocal.fake-artifact-metadata.v1",
             "job_id": job_id,
             "capability": request.capability.value,
             "source_asset_version_id": source_asset_version_id,
+            "parent_asset_version_id": parent_asset_version_id,
+            "processing_chain_id": processing_chain_id,
             "model_manifest_id": request.model_manifest_id,
             "settings_snapshot": request.settings_snapshot,
+            "processing_types": processing_types,
         }
         checksum = hashlib.sha256(
             json.dumps(
@@ -303,7 +322,7 @@ class FakeVocalProvider:
                 settings_snapshot=json.loads(
                     json.dumps(request.settings_snapshot, sort_keys=True)
                 ),
-                processing_types=self._processing_types(request),
+                processing_types=processing_types,
                 created_at=created_at,
                 checksum=checksum,
                 source_artifact_id=(
@@ -322,14 +341,17 @@ class FakeVocalProvider:
         )
 
     @staticmethod
-    def _source_asset_version(request: CreateVocalJobRequest) -> str:
+    def _lineage_versions(request: CreateVocalJobRequest) -> tuple[str, str]:
         if isinstance(
             request.job_input, (VoiceConversionInput, CorrectionInput, AnalysisInput)
         ):
-            return request.job_input.source_asset_version_id
+            source = request.job_input.source_asset_version_id
+            return source, request.job_input.parent_asset_version_id or source
         if request.input_asset_version_ids:
-            return request.input_asset_version_ids[0]
-        return f"generated-source:{request.project_id}"
+            source = request.input_asset_version_ids[0]
+            return source, source
+        source = f"generated-source:{request.project_id}"
+        return source, source
 
     @staticmethod
     def _processing_types(request: CreateVocalJobRequest) -> tuple[str, ...]:

@@ -81,3 +81,38 @@ def test_openapi_measurements_and_unique_operation_ids(client):
     assert len(schema["paths"]) == 9
     assert len(operation_ids) == 9
     assert len(operation_ids) == len(set(operation_ids))
+
+
+def test_provider_contract_version_manifest_state_and_result_errors(
+    client, generation_payload
+):
+    unknown_manifest = client.get("/v1/model-manifests/missing")
+    queued_payload = deepcopy(generation_payload)
+    queued_payload["idempotency_key"] = "result-before-success"
+    queued_payload["settings_snapshot"] = {"fake_outcome": "queued"}
+    queued = client.post("/v1/jobs", json=queued_payload).json()
+    early_result = client.get(f"/v1/jobs/{queued['job_id']}/result")
+    invalid_transition = client.post(f"/v1/jobs/{queued['job_id']}/retry")
+
+    unsupported_provider = deepcopy(generation_payload)
+    unsupported_provider["idempotency_key"] = "unsupported-provider"
+    unsupported_provider["provider_id"] = "other"
+    provider_error = client.post("/v1/jobs", json=unsupported_provider)
+
+    unsupported_version = deepcopy(generation_payload)
+    unsupported_version["idempotency_key"] = "unsupported-version"
+    unsupported_version["api_contract_version"] = "9.0.0"
+    version_error = client.post("/v1/jobs", json=unsupported_version)
+
+    assert unknown_manifest.status_code == 404
+    assert unknown_manifest.json()["error"]["error_code"] == "MODEL_MANIFEST_NOT_FOUND"
+    assert early_result.status_code == 409
+    assert early_result.json()["error"]["error_code"] == "JOB_RESULT_NOT_AVAILABLE"
+    assert invalid_transition.status_code == 409
+    assert invalid_transition.json()["error"]["error_code"] == "JOB_RETRY_NOT_ALLOWED"
+    assert provider_error.status_code == 400
+    assert provider_error.json()["error"]["error_code"] == "PROVIDER_NOT_SUPPORTED"
+    assert version_error.status_code == 400
+    assert version_error.json()["error"]["error_code"] == (
+        "CONTRACT_VERSION_UNSUPPORTED"
+    )

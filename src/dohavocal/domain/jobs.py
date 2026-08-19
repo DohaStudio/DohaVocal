@@ -1,11 +1,12 @@
 """Common and capability-specific Vocal Job contracts."""
 
 import re
+from copy import deepcopy
 from datetime import datetime
 from enum import StrEnum
 from typing import Annotated, Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from dohavocal.domain.errors import ErrorDetail
 
@@ -57,27 +58,34 @@ class GenerationInput(FrozenModel):
     melody_reference: str
     timing_reference: str | None = None
     voice_reference: str | None = None
+    processing_chain_id: str | None = None
 
 
 class VoiceConversionInput(FrozenModel):
     job_type: Literal[JobType.VOICE_CONVERSION]
     source_asset_version_id: str
+    parent_asset_version_id: str | None = None
     voice_reference_artifact_id: str
     source_entity_type: Literal["recording_take", "ai_generated_vocal"]
     reference_entity_type: Literal["voice_enrollment_sample"]
     training_dataset_id: None = None
+    processing_chain_id: str | None = None
 
 
 class CorrectionInput(FrozenModel):
     job_type: Literal[JobType.VOCAL_CORRECTION]
     source_asset_version_id: str
+    parent_asset_version_id: str | None = None
     correction_types: tuple[CorrectionType, ...] = Field(min_length=1)
+    processing_chain_id: str | None = None
 
 
 class AnalysisInput(FrozenModel):
     job_type: Literal[JobType.VOCAL_ANALYSIS]
     source_asset_version_id: str
+    parent_asset_version_id: str | None = None
     analysis_types: tuple[AnalysisType, ...] = Field(min_length=1)
+    processing_chain_id: str | None = None
 
 
 VocalJobInput = Annotated[
@@ -100,15 +108,22 @@ class CreateVocalJobRequest(FrozenModel):
     composition_snapshot_id: str | None = None
     job_input: VocalJobInput
 
+    @field_validator("settings_snapshot", mode="before")
+    @classmethod
+    def copy_settings_snapshot(cls, value: Any) -> Any:
+        """Detach nested caller-owned containers at the request boundary."""
+
+        return deepcopy(value)
+
     @model_validator(mode="after")
     def capability_matches_job_input(self) -> "CreateVocalJobRequest":
         if self.capability != self.job_input.job_type:
             raise ValueError("capability과 job_input.job_type이 일치해야 합니다.")
-        self._reject_sensitive_settings(self.model_dump(mode="python"))
+        self._reject_sensitive_or_path_values(self.model_dump(mode="python"))
         return self
 
     @classmethod
-    def _reject_sensitive_settings(cls, value: Any, key: str = "") -> None:
+    def _reject_sensitive_or_path_values(cls, value: Any, key: str = "") -> None:
         forbidden_keys = {
             "api_key",
             "credential",
@@ -123,14 +138,21 @@ class CreateVocalJobRequest(FrozenModel):
             raise ValueError("settings_snapshot에 민감한 설정을 포함할 수 없습니다.")
         if isinstance(value, dict):
             for nested_key, nested_value in value.items():
-                cls._reject_sensitive_settings(nested_value, str(nested_key))
+                cls._reject_sensitive_or_path_values(nested_value, str(nested_key))
         elif isinstance(value, (list, tuple)):
             for item in value:
-                cls._reject_sensitive_settings(item, key)
-        elif isinstance(value, str) and (
-            re.match(r"^[A-Za-z]:[\\/]", value) or value.startswith("/")
-        ):
-            raise ValueError("Provider 요청에 절대 경로를 포함할 수 없습니다.")
+                cls._reject_sensitive_or_path_values(item, key)
+        elif isinstance(value, str) and cls._looks_like_path(value):
+            raise ValueError("Provider 요청에 파일 경로를 포함할 수 없습니다.")
+
+    @staticmethod
+    def _looks_like_path(value: str) -> bool:
+        return bool(
+            re.match(r"^[A-Za-z]:[\\/]", value)
+            or value.startswith(("/", "\\", "~/", "~\\"))
+            or re.search(r"(^|[\\/])\.\.([\\/]|$)", value)
+            or re.search(r"(^|:)file://", value, flags=re.IGNORECASE)
+        )
 
 
 class BaseVocalJob(FrozenModel):

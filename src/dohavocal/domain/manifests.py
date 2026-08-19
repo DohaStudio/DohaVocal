@@ -31,6 +31,9 @@ class ModelManifest(BaseModel):
     recommended_vram: None = None
     runtime_environment: dict[str, str]
     artifact_checksum: str = Field(pattern=r"^[0-9a-f]{64}$")
+    artifact_checksum_scope: Literal["fake_manifest_descriptor"] = (
+        "fake_manifest_descriptor"
+    )
     created_at: datetime
     voice_identity_scope: Literal["generic"] = "generic"
     consent_requirement: Literal["caller_verified"] = "caller_verified"

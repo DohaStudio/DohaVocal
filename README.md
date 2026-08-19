@@ -37,7 +37,7 @@ flowchart LR
     DM[DohaMusic Orchestrator]
     JOB[Vocal Job]
     DV[DohaVocal Runtime Foundation - Fake Provider]
-    OUT[Derived Vocal Artifact]
+    OUT[Derived Vocal Artifact metadata candidate]
     CHOICE[DohaMusic 사용자 선택]
 
     DM --> JOB --> DV --> OUT --> DM --> CHOICE
@@ -71,6 +71,8 @@ Voice Enrollment Sample과 Recording Take는 자동으로 Training Dataset이 �
 | Mix·Export·Preview·Snapshot | `DohaArtifacts/music` | DohaVocal 범위 아님 |
 
 Runtime Foundation은 Artifact payload나 로컬 저장 경로에 접근하지 않고 파생 후보의 ID, checksum과 lineage metadata만 in-memory로 생성합니다. Production Artifact Catalog·Resolver 연동은 [미구현]입니다.
+
+Fake 결과의 `artifact_checksum`은 실제 audio payload checksum이 아니라 canonical metadata descriptor의 SHA-256이며 `checksum_scope=metadata_descriptor`, `payload_present=false`로 구분합니다.
 
 ## Runtime Foundation 실행
 

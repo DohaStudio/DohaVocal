@@ -18,6 +18,7 @@ class ArtifactLineage(BaseModel):
     processing_types: tuple[str, ...]
     created_at: datetime
     checksum: str = Field(pattern=r"^[0-9a-f]{64}$")
+    checksum_scope: Literal["metadata_descriptor"] = "metadata_descriptor"
     source_artifact_id: str | None = None
     parent_artifact_id: str | None = None
     job_id: str
@@ -32,6 +33,8 @@ class VocalArtifact(BaseModel):
     size_bytes: int = Field(ge=0)
     checksum_algorithm: Literal["sha256"] = "sha256"
     artifact_checksum: str = Field(pattern=r"^[0-9a-f]{64}$")
+    checksum_scope: Literal["metadata_descriptor"] = "metadata_descriptor"
+    payload_present: Literal[False] = False
     producer_type: Literal["provider"] = "provider"
     producer_id: str
     run_id: str
