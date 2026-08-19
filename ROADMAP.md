@@ -16,6 +16,15 @@
 | 10 | Provider API | [계획] |
 | 11 | Stable Release | [계획] |
 
+## 구현된 Foundation
+
+- Runtime Foundation: [구현]
+- Provider API Foundation: [구현]
+- metadata-only Fake Provider: [구현]
+- 공통 Vocal Job lifecycle·idempotency·retry·lineage 계약: [구현]
+
+위 Foundation은 Phase 5~11의 실제 모델, DSP, Training, Evaluation 또는 Production 완료를 의미하지 않습니다.
+
 ## 공통 완료 조건
 
 - 책임 경계와 ADR 일치

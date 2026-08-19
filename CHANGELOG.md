@@ -4,6 +4,13 @@
 
 ### 추가
 
+- Python 3.12 `src/dohavocal` Runtime bootstrap과 FastAPI Provider API Foundation
+- `VocalGenerationJob`, `VoiceConversionJob`, `VocalCorrectionJob`, `VocalAnalysisJob` 공통 계약
+- `queued`·`running`·terminal 상태 전이, 새 Job 기반 retry와 scope별 idempotency
+- Model Manifest, 파생 Artifact·AssetVersion 후보와 불변 Vocal lineage metadata
+- 실제 모델·오디오·Dataset 없이 동작하는 deterministic metadata-only Fake Provider
+- Provider/API/state/retry/idempotency/lineage/security 계약 테스트
+- 최종 독립 검증에서 path fail-closed 범위, atomic 상태 전이, 연속 lineage와 metadata checksum scope 보강
 - DohaVocal 문서 기반 Architecture와 문서 인덱스
 - Vocal Dataset·Consent, immutable lineage, Provider·Mix Boundary 계약
 - ADR-001~ADR-005 제안
@@ -17,6 +24,6 @@
 
 ### 미구현
 
-- AI Singing Voice, Voice Conversion, Vocal Correction
+- 실제 AI Singing Voice, Voice Conversion, Vocal Correction 엔진
 - Dataset Migration, Training, Evaluation
-- User-specific Adapter, Runtime과 Provider API
+- User-specific Adapter, Production Runtime과 영속화·실제 Artifact 연동

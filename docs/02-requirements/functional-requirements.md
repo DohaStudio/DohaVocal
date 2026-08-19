@@ -1,7 +1,8 @@
 # 기능 요구사항
 
 > 문서 상태: [계획]
-> 모든 요구사항: [미구현]
+> Runtime Foundation: FR-010, FR-011의 Fake metadata 계약 [구현]
+> 실제 모델·Artifact payload·Consent Gate·Training 요구사항: [미구현]
 
 | ID | 요구사항 |
 |---|---|
