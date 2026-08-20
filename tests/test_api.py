@@ -1,5 +1,7 @@
 from copy import deepcopy
 
+from dohavocal.config import DOHAVOCAL_PROVIDER_ID
+
 
 def test_health_readiness_and_capabilities(client):
     assert client.get("/health").json()["status"] == "ok"
@@ -13,6 +15,40 @@ def test_health_readiness_and_capabilities(client):
         "vocal_correction",
         "vocal_analysis",
     ]
+
+
+def test_canonical_provider_identity_is_stable_across_all_operations(
+    client, generation_payload
+):
+    health = client.get("/health").json()
+    readiness = client.get("/ready").json()
+    capabilities = client.get("/v1/capabilities").json()
+
+    created = client.post("/v1/jobs", json=generation_payload).json()
+    status = client.get(f"/v1/jobs/{created['job_id']}").json()
+    result = client.get(f"/v1/jobs/{created['job_id']}/result").json()
+    manifest = client.get(
+        f"/v1/model-manifests/{generation_payload['model_manifest_id']}"
+    ).json()
+
+    queued_payload = deepcopy(generation_payload)
+    queued_payload["idempotency_key"] = "provider-identity-cancel-retry"
+    queued_payload["settings_snapshot"] = {"fake_outcome": "queued"}
+    queued = client.post("/v1/jobs", json=queued_payload).json()
+    cancelled = client.post(f"/v1/jobs/{queued['job_id']}/cancel").json()
+    retried = client.post(f"/v1/jobs/{queued['job_id']}/retry").json()
+
+    assert health["provider_id"] == DOHAVOCAL_PROVIDER_ID
+    assert readiness["provider_id"] == DOHAVOCAL_PROVIDER_ID
+    assert capabilities["provider_id"] == DOHAVOCAL_PROVIDER_ID
+    assert created["provider_id"] == DOHAVOCAL_PROVIDER_ID
+    assert status["provider_id"] == DOHAVOCAL_PROVIDER_ID
+    assert cancelled["provider_id"] == DOHAVOCAL_PROVIDER_ID
+    assert retried["provider_id"] == DOHAVOCAL_PROVIDER_ID
+    assert result["producer_id"] == DOHAVOCAL_PROVIDER_ID
+    assert result["lineage"]["provider_id"] == DOHAVOCAL_PROVIDER_ID
+    assert manifest["provider_id"] == DOHAVOCAL_PROVIDER_ID
+    assert manifest["model_manifest_id"] == "dohavocal.fake-model@0.1.0"
 
 
 def test_create_get_result_and_manifest(client, generation_payload):

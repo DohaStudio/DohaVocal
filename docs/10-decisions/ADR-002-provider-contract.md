@@ -12,6 +12,8 @@
 
 DohaMusic만 DohaVocal을 호출합니다. DohaVocal은 DohaAudio·DohaLM을 직접 호출하지 않습니다. 계약은 capability, Job 생성·상태·취소·재시도·결과, Manifest, Health·Readiness와 API version을 포함하고 Artifact ID/URI를 사용합니다.
 
+DohaVocal의 논리 Provider ID는 `dohavocal`로 고정합니다. Fake·local·remote·Production은 Runtime implementation 특성이며 `provider_id` suffix로 표현하지 않습니다. 현재 Fake Model identity는 Model Manifest ID `dohavocal.fake-model@0.1.0`과 Manifest runtime metadata로 분리합니다. `provider_id`가 idempotency scope에 포함되므로 구현 교체만으로 같은 논리 Provider의 scope가 변경되지 않아야 합니다.
+
 ## 이유와 대안
 
 단일 Workspace·Job Orchestrator가 사용자 권한, Job과 GPU admission을 일관되게 관리합니다. Provider 직접 호출과 공유 절대 경로 대안은 순환 의존, 배포 결합과 정보 노출을 만듭니다.

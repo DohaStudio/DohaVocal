@@ -1,5 +1,6 @@
 import pytest
 
+from dohavocal.config import DOHAVOCAL_PROVIDER_ID, RuntimeSettings
 from dohavocal.domain.errors import ContractVersionError, UnsupportedCapabilityError
 from dohavocal.domain.jobs import JobType
 
@@ -8,6 +9,12 @@ def test_capabilities_and_probes(provider):
     assert provider.get_capabilities() == tuple(JobType)
     assert provider.health() is True
     assert provider.readiness() is True
+
+
+def test_logical_provider_identity_cannot_be_reconfigured_per_runtime() -> None:
+    assert RuntimeSettings().provider_id == DOHAVOCAL_PROVIDER_ID
+    with pytest.raises(TypeError):
+        RuntimeSettings(provider_id="dohavocal.fake")  # type: ignore[call-arg]
 
 
 def test_contract_version_is_validated(provider, request_factory):

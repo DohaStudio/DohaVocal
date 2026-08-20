@@ -27,3 +27,8 @@
 - 실제 AI Singing Voice, Voice Conversion, Vocal Correction 엔진
 - Dataset Migration, Training, Evaluation
 - User-specific Adapter, Production Runtime과 영속화·실제 Artifact 연동
+
+### 수정
+
+- metadata-only Fake Runtime의 `provider_id`를 구현 suffix가 없는 논리 식별자 `dohavocal`로 정합화하고, Fake Model identity `dohavocal.fake-model@0.1.0`과 분리했다.
+- Health, Readiness, Capabilities, Job 생성·조회·취소·재시도, Result와 Model Manifest의 Consumer-facing identity 회귀 검증을 추가했다.
