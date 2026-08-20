@@ -61,7 +61,7 @@ def request_factory() -> Callable[..., CreateVocalJobRequest]:
         }
         return CreateVocalJobRequest.model_validate(
             {
-                "provider_id": "dohavocal.fake",
+                "provider_id": "dohavocal",
                 "capability": job_type.value,
                 "api_contract_version": "0.1.0",
                 "idempotency_key": idempotency_key or f"request-{sequence}",
@@ -82,7 +82,7 @@ def request_factory() -> Callable[..., CreateVocalJobRequest]:
 @pytest.fixture
 def generation_payload() -> dict[str, Any]:
     return {
-        "provider_id": "dohavocal.fake",
+        "provider_id": "dohavocal",
         "capability": "vocal_generation",
         "api_contract_version": "0.1.0",
         "idempotency_key": "api-generation-1",

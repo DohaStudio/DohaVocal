@@ -10,6 +10,8 @@ DohaVocal은 DohaMusic의 보컬 AI Provider입니다. AI Singing Voice, Voice C
 
 현재 저장소에는 공통 Vocal Job 계약, in-memory lifecycle·idempotency, metadata-only Fake Provider와 FastAPI Runtime Foundation이 구현되어 있습니다. Fake Provider는 실제 오디오를 읽거나 쓰지 않으며 모델, GPU, Dataset, Checkpoint와 외부 Provider를 사용하지 않습니다.
 
+논리 Provider 식별자는 Runtime 구현 방식과 분리된 `dohavocal`입니다. 현재 구현은 metadata-only Fake Runtime이며 Fake 모델의 Manifest 식별자는 `dohavocal.fake-model@0.1.0`입니다. 이후 local·remote·Production Runtime으로 구현이 바뀌어도 같은 논리 Provider의 `provider_id`는 유지합니다.
+
 ## 책임
 
 - AI Singing Voice Generation과 Voice Conversion [계획]

@@ -22,6 +22,7 @@
 - Provider API Foundation: [구현]
 - metadata-only Fake Provider: [구현]
 - 공통 Vocal Job lifecycle·idempotency·retry·lineage 계약: [구현]
+- 논리 Provider ID `dohavocal`과 Fake Runtime·Model Manifest identity 분리: [구현]
 
 위 Foundation은 Phase 5~11의 실제 모델, DSP, Training, Evaluation 또는 Production 완료를 의미하지 않습니다.
 

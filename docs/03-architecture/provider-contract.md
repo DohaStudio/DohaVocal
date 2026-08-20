@@ -13,6 +13,12 @@
 
 Provider 간 직접 호출은 금지하며 모든 조정은 DohaMusic을 경유합니다.
 
+## Provider Identity
+
+논리 Provider ID는 `dohavocal`입니다. `provider_id`는 같은 Provider의 Runtime 구현을 구분하는 필드가 아니므로 Fake·local·remote·Production 전환에서 suffix를 붙이거나 바꾸지 않습니다. 현재 metadata-only Fake 구현은 Model Manifest ID `dohavocal.fake-model@0.1.0`과 Manifest의 `runtime_environment`로 구분합니다.
+
+Capabilities, Job, Result lineage와 Model Manifest는 모두 같은 `provider_id=dohavocal`을 사용합니다. 이 값은 idempotency scope의 일부이므로 Runtime 구현 교체만으로 동일 논리 Provider의 scope가 갈라지지 않습니다.
+
 ## 구현 Surface
 
 | Method | Path | 의미 |
