@@ -15,3 +15,5 @@ Fake Provider는 deterministic metadata-only 실행체입니다. 기본 요청�
 초기 Local Runner/Subprocess 호환은 `[계획]` 또는 `[Legacy]`가 될 수 있으며 장기적으로 versioned 독립 Runtime 계약을 사용합니다. GPU admission과 Provider orchestration은 DohaMusic 책임입니다.
 
 Job, idempotency와 Artifact metadata는 명시적인 in-memory adapter에만 저장됩니다. process 재시작 후 보존, 다중 worker 동기화, queue와 DB adapter는 [미구현]입니다.
+
+TARGET `0.2.0` Runtime은 immutable payload-backed Result와 별도 streaming `GetPayloadContent` port를 제공해야 합니다. JSON transport와 binary transport를 분리하고 같은 Result replay에서 source·checksum·size·media를 바꾸지 않습니다. 현재 Fake Runtime에는 actual bytes, binary endpoint, source lifetime persistence와 Production authentication이 없으므로 `0.2.0` 지원을 광고하지 않습니다.

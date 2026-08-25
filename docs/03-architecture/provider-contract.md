@@ -4,6 +4,7 @@
 > HTTP API Foundation: [구현]
 > Production Provider Runtime: [미구현]
 > 공통 명세: `0.1.0` / `draft-baseline`
+> Payload extension: `0.2.0` [제안·미구현]
 
 [DohaStudio 공통 Provider 계약](https://github.com/DohaStudio/.github/blob/main/docs/specifications/04-provider-contract.md)을 기준으로 Capabilities, Create Job, Get Status, Cancel, Retry, Get Result, Get Model Manifest, Health와 Readiness를 구체화합니다. Job에는 ID, type, status, progress, provider/API/model version, input/output Artifact ID, settings snapshot, retry parent, error와 시간이 포함됩니다. 감사와 재현이 필요한 경우 기준 커밋 `1e4b480c8cbd6e51835f8550e685e9b136d8071d`를 사용합니다.
 
@@ -32,6 +33,14 @@ Capabilities, Job, Result lineage와 Model Manifest는 모두 같은 `provider_i
 | `POST` | `/v1/jobs/{job_id}/retry` | failed/cancelled Job의 새 retry 생성 |
 | `GET` | `/v1/jobs/{job_id}/result` | 성공 Artifact metadata 조회 |
 | `GET` | `/v1/model-manifests/{model_manifest_id}` | 불변 Manifest 조회 |
+
+CURRENT 표는 구현된 `0.1.0`의 9개 operation이다. TARGET `0.2.0`은 [Provider Payload Acquisition 계약](provider-payload-acquisition-contract.md)에 따라 `GetResult`의 payload-backed variant와 다음 fixed-origin binary subresource를 추가한다.
+
+```http
+GET /v1/jobs/{job_id}/artifacts/{provider_artifact_id}/payloads/{source_id}
+```
+
+이 endpoint, `GetPayloadContent` capability advertisement와 binary transport는 `[미구현]`이다. `artifact_id`를 source ID로 해석하거나 signed URL·로컬 경로를 합성하지 않는다.
 
 지원 capability는 `vocal_generation`, `voice_conversion`, `vocal_correction`, `vocal_analysis`입니다. Provider interface는 공통 `GetCapabilities`, `CreateJob`, `GetJobStatus`, `CancelJob`, `RetryJob`, `GetResult`, `GetModelManifest`, `Health`, `Readiness` 의미를 유지합니다.
 

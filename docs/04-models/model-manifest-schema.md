@@ -19,3 +19,5 @@ Foundation은 게시 후 불변인 `ModelManifest` domain model과 Fake Manifest
 현재 Fake Manifest ID는 `dohavocal.fake-model@0.1.0`입니다. 이는 Fake Model의 identity이며 논리 Provider ID `dohavocal`과 역할이 다릅니다.
 
 Fake Manifest의 `artifact_checksum`은 실제 model/checkpoint payload가 아니라 Fake Manifest 식별 descriptor의 checksum이며 `artifact_checksum_scope=fake_manifest_descriptor`로 표시합니다. Production Model Artifact checksum으로 사용할 수 없습니다.
+
+TARGET payload entry의 `expected_media_type`은 선택된 Manifest의 `output_formats`와 일치해야 하며 Result source는 exact `model_manifest_id` context에 결속됩니다. payload source descriptor를 다른 Manifest 실행에 재사용할 수 없습니다. 현재 Fake Manifest의 `output_formats=[metadata-only]`는 binary acquisition 지원을 광고하지 않습니다.

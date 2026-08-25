@@ -22,6 +22,8 @@ DohaVocal의 논리 Provider ID는 `dohavocal`로 고정합니다. Fake·local·
 
 HTTP endpoint와 schema의 Fake Runtime Foundation은 `[구현]`이며 실제 모델을 실행하는 Production Runtime은 `[미구현]`입니다. Local Runner 호환을 단계적으로 허용하되 외부 절대 경로 계약으로 고정하지 않습니다.
 
+Payload-backed Result의 stable source identity와 binary acquisition 확장은 [ADR-006](ADR-006-provider-payload-acquisition-authority.md)이 별도로 정의합니다. ADR-002의 단일 Orchestrator와 경로·비밀정보 비노출 결정은 그대로 유지합니다.
+
 ## 재검토
 
 원격 Runtime·scheduler 요구가 확정되어 현재 추상화로 표현할 수 없을 때 재검토합니다.
