@@ -3,6 +3,7 @@
 > 문서 상태: [진행 중]
 > Foundation 상태: Runtime Foundation, Provider API Foundation, Fake Provider [구현]
 > 모델 상태: 실제 AI Singing Voice, Voice Conversion, Vocal Correction, Training, Evaluation, Production Runtime [미구현]
+> Payload 계약: `0.1.0` metadata-only [구현] / `0.2.0` acquisition authority [제안·미구현]
 > 공통 명세: `0.1.0` / `draft-baseline`
 > 명세 기준: `DohaStudio/.github` `main` (`1e4b480c8cbd6e51835f8550e685e9b136d8071d`)
 
@@ -76,6 +77,8 @@ Runtime Foundation은 Artifact payload나 로컬 저장 경로에 접근하지 �
 
 Fake 결과의 `artifact_checksum`은 실제 audio payload checksum이 아니라 canonical metadata descriptor의 SHA-256이며 `checksum_scope=metadata_descriptor`, `payload_present=false`로 구분합니다.
 
+미래 payload-backed Result는 [Provider Payload Acquisition 계약](docs/03-architecture/provider-payload-acquisition-contract.md)의 `0.2.0` TARGET을 따릅니다. stable non-secret `provider_subresource` identity와 별도 binary acquisition operation을 사용하고 credential, signed URL과 로컬 경로를 Result에 포함하지 않습니다. 이 계약의 Runtime endpoint와 실제 bytes는 아직 구현하지 않았습니다.
+
 ## Runtime Foundation 실행
 
 Python 3.12 환경에서 개발 의존성을 설치한 뒤 다음 명령을 사용할 수 있습니다.
@@ -96,9 +99,10 @@ dohavocal
 5. [Repository Boundary](docs/00-overview/repository-boundary.md)
 6. [기능 요구사항](docs/02-requirements/functional-requirements.md)
 7. [System Architecture](docs/03-architecture/system-architecture.md)
-8. [Vocal Asset Lineage](docs/03-architecture/vocal-asset-lineage.md)
-9. [Consent와 권리](docs/05-data/consent-and-rights.md)
-10. [문서 인덱스](docs/index.md)
+8. [Provider Payload Acquisition 계약](docs/03-architecture/provider-payload-acquisition-contract.md)
+9. [Vocal Asset Lineage](docs/03-architecture/vocal-asset-lineage.md)
+10. [Consent와 권리](docs/05-data/consent-and-rights.md)
+11. [문서 인덱스](docs/index.md)
 
 전체 단계는 [Roadmap](ROADMAP.md), 변경 기록은 [CHANGELOG](CHANGELOG.md), 결정 제안은 [ADR 인덱스](docs/10-decisions/README.md)에서 확인합니다.
 

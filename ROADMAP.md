@@ -23,8 +23,9 @@
 - metadata-only Fake Provider: [구현]
 - 공통 Vocal Job lifecycle·idempotency·retry·lineage 계약: [구현]
 - 논리 Provider ID `dohavocal`과 Fake Runtime·Model Manifest identity 분리: [구현]
+- payload-backed Result·stable `provider_subresource`·binary acquisition `0.2.0` 계약: [제안, Runtime 미구현]
 
-위 Foundation은 Phase 5~11의 실제 모델, DSP, Training, Evaluation 또는 Production 완료를 의미하지 않습니다.
+위 Foundation과 계약은 Phase 5~11의 실제 모델, DSP, Training, Evaluation, binary endpoint 또는 Production 완료를 의미하지 않습니다. Payload 계약 review·merge 뒤 DohaMusic consumer를 확장하고 Durable Locator를 재분석합니다.
 
 ## 공통 완료 조건
 

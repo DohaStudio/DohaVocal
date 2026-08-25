@@ -21,12 +21,15 @@
 - 공통 명세 `0.1.0` / `draft-baseline`의 안정 기준을 `.github` 저장소 `main`으로 고정
 - 여덟 가지 Vocal Job의 독립 실행과 원본 불변·파생 AssetVersion 생성 원칙 명시
 - 코드·문서의 Apache License 2.0 적용과 개인 음성·Dataset·모델·생성 결과·동의 증적의 권리 분리 명시
+- metadata-only `0.1.0`을 보존하면서 payload-backed Result, stable `provider_subresource`, 1:N payload entry와 별도 binary acquisition operation을 정의한 `0.2.0` TARGET 계약 및 ADR-006 제안
+- payload checksum·size·media expectation, replay stability, source lifetime, credential 분리, acquisition 오류·retry·cancellation·권리·SSRF 경계 정의
 
 ### 미구현
 
 - 실제 AI Singing Voice, Voice Conversion, Vocal Correction 엔진
 - Dataset Migration, Training, Evaluation
 - User-specific Adapter, Production Runtime과 영속화·실제 Artifact 연동
+- 실제 binary payload 생성·acquisition endpoint·Production 인증과 DohaMusic consumer·Durable Locator 연동
 
 ### 수정
 
