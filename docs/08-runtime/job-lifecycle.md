@@ -22,4 +22,4 @@ stateDiagram-v2
 
 `failed` 전이에는 구조화된 `error`, `succeeded` 전이에는 검증된 output ID가 필요합니다. 단일 process 안의 상태 교체는 현재 status를 비교한 atomic operation으로 처리하지만 multi-worker·분산 동시성을 보장하지 않습니다.
 
-TARGET payload-backed Result에서 Provider Job `succeeded`와 payload acquisition transfer는 분리합니다. 성공 뒤 transfer cancellation은 진행 중인 binary read를 중단할 뿐 terminal Job, Result identity 또는 source binding을 변경하지 않습니다. acquisition failure도 자동 `RetryJob`이나 inference 재실행으로 변환하지 않으며 [Provider Payload Acquisition 계약](../03-architecture/provider-payload-acquisition-contract.md)의 별도 retry·error boundary를 따릅니다.
+구현된 0.2.0 Fake payload-backed Result에서 Provider Job `succeeded`와 payload acquisition transfer는 분리합니다. 성공 뒤 transfer cancellation은 진행 중인 binary read를 중단할 뿐 terminal Job, Result identity 또는 source binding을 변경하지 않습니다. acquisition failure도 자동 `RetryJob`이나 inference 재실행으로 변환하지 않으며 [Provider Payload Acquisition 계약](../03-architecture/provider-payload-acquisition-contract.md)의 별도 retry·error boundary를 따릅니다.

@@ -12,3 +12,5 @@
 | [ADR-006](ADR-006-provider-payload-acquisition-authority.md) | Provider Payload Acquisition Authority | [제안] |
 
 결정이 대체되면 기존 ADR을 삭제하지 않고 상태와 새 ADR 링크를 기록합니다.
+
+ADR-006 구현 추적: payload-backed Fake Runtime은 구현했으며, 결정 상태는 제안으로 유지합니다. Production durable Runtime·authentication·rights는 미구현입니다.

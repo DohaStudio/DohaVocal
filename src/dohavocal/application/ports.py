@@ -2,9 +2,9 @@
 
 from typing import Protocol
 
-from dohavocal.domain.artifacts import VocalArtifact
 from dohavocal.domain.jobs import AnyVocalJob, CreateVocalJobRequest, JobType
 from dohavocal.domain.manifests import ModelManifest
+from dohavocal.domain.payloads import AnyVocalArtifact, PayloadContent
 
 
 class VocalProvider(Protocol):
@@ -18,9 +18,15 @@ class VocalProvider(Protocol):
 
     def retry_job(self, job_id: str) -> AnyVocalJob: ...
 
-    def get_result(self, job_id: str) -> VocalArtifact: ...
+    def get_result(self, job_id: str) -> AnyVocalArtifact: ...
 
     def get_model_manifest(self, model_manifest_id: str) -> ModelManifest: ...
+
+    def get_payload_content(
+        self, job_id: str, provider_artifact_id: str, source_id: str
+    ) -> PayloadContent: ...
+
+    def supported_contract_versions(self) -> tuple[str, ...]: ...
 
     def health(self) -> bool: ...
 

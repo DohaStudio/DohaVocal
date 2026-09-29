@@ -1,6 +1,6 @@
 # Provider Payload Acquisition 계약
 
-> 문서 상태: [제안: wire authority] / [미구현: Runtime endpoint·binary payload·Production 인증]
+> 문서 상태: [제안: wire authority] / [구현: Fake endpoint·binary payload] / [미구현: Production durability·인증·권리]
 > CURRENT API contract: `0.1.0` metadata-only
 > TARGET API contract: `0.2.0` payload acquisition extension
 > 관련 결정: [ADR-006](../10-decisions/ADR-006-provider-payload-acquisition-authority.md)
@@ -19,7 +19,7 @@ Provider Result candidate identity
 != DohaMusic Artifact identity
 ```
 
-이 문서는 wire와 architecture authority만 정의한다. 실제 Payload 생성, binary endpoint, network client, credential integration, persistence, downloader와 DohaMusic ingestion은 모두 `[미구현]`이다.
+이 문서는 wire와 architecture authority를 정의한다. 0.2.0 Fake Runtime의 합성 Payload 생성과 binary endpoint는 `[구현]`이다. Production credential integration·persistence·rights와 실제 DohaMusic network E2E는 `[미구현]`이다. 아래 Production 요구사항은 그대로 유지하며 Fake 개발용 한계를 운영 보장으로 승격하지 않는다.
 
 ## 2. Versioned Result variant
 
@@ -82,7 +82,7 @@ Production `0.2.0`의 유일한 source kind는 `provider_subresource`다. `sourc
 - Windows·POSIX·UNC path, storage root, bucket/container 이름
 - Authorization, bearer token, API key, cookie, refresh token, signed query
 
-후속 Fake payload-backed fixture도 로컬 path를 wire에 내보내지 않고 같은 `provider_subresource` shape만 모사해야 한다. 현재 Fake Runtime은 metadata-only이므로 source descriptor를 반환하지 않는다.
+후속 Fake payload-backed fixture도 로컬 path를 wire에 내보내지 않고 같은 `provider_subresource` shape만 모사해야 한다. 기존 0.1.0 Fake 요청은 source descriptor를 반환하지 않으며, 명시적 0.2.0 Fake 요청은 이 descriptor를 반환한다.
 
 ## 4. Payload byte expectations
 
@@ -125,9 +125,9 @@ TARGET Result의 `payloads`는 ordered 1:N entry collection이다. replay를 위
 
 변경은 `PROVIDER_RESULT_REPLAY_CONFLICT`다. credential이나 Provider 내부 storage topology 변화는 Result field가 아니며 replay identity를 바꾸지 않는다. 내부 object relocation이 필요하면 기존 stable source ID가 새 위치를 해석해야 한다. 같은 Result에서 새 source ID로 조용히 교체하지 않는다.
 
-이 불변성은 같은 process 안의 반복 호출뿐 아니라 Provider restart와 DohaMusic reclaim 뒤의 replay에도 적용한다. TARGET Runtime은 Result와 source binding을 durable하게 보존하거나 동일 identity를 결정적으로 복구해야 한다. 현재 in-memory Fake Runtime은 이 production 조건을 충족하지 않으므로 `0.2.0`을 광고할 수 없다.
+이 불변성은 같은 process 안의 반복 호출뿐 아니라 Provider restart와 DohaMusic reclaim 뒤의 replay에도 적용한다. TARGET Runtime은 Result와 source binding을 durable하게 보존하거나 동일 identity를 결정적으로 복구해야 한다. 현재 in-memory Fake Runtime은 이 production 조건을 충족하지 않는다. 이번 Foundation에서는 명시적 0.2.0 선택에 개발용 Fake payload 지원만 광고한다. Production-ready 또는 restart durability를 의미하지 않으며 기본 0.1.0 광고는 유지한다.
 
-`available_until`은 stable source lifetime이며 credential expiry가 아니다. timezone-aware UTC timestamp 또는 `null`이다. finite 값이면 그 시점 전까지 권리·삭제 정책이 허용하는 source를 제공해야 한다. `null`이면 explicit deletion, rights revocation 또는 source invalidation 전까지 기술적으로 제공한다는 뜻이다. Provider가 이를 보장할 Runtime persistence와 cleanup acknowledgement는 `[미구현]`이다.
+`available_until`은 stable source lifetime이며 credential expiry가 아니다. timezone-aware UTC timestamp 또는 `null`이다. finite 값이면 그 시점 전까지 권리·삭제 정책이 허용하는 source를 제공해야 한다. `null`이면 explicit deletion, rights revocation 또는 source invalidation 전까지 기술적으로 제공한다는 뜻이다. Provider가 이를 운영 환경에서 보장할 Runtime persistence와 cleanup acknowledgement는 `[미구현]`이다. Fake의 `null`은 단일 process 수명 안에서만 적용하며 process 종료는 source invalidation이다.
 
 source ID는 credential 또는 access capability가 아니다. source가 존재하더라도 acquisition 요청마다 authentication과 현재 권리 상태를 다시 확인한다.
 
@@ -143,7 +143,7 @@ path segment는 opaque ID로 encode하며 client가 URL, host, path 또는 query
 
 성공 응답은 JSON wrapper 없는 binary body다. `Content-Type`은 필수, `Content-Length`는 선택이다. 전송은 streaming과 caller cancellation을 지원해야 하며 consumer가 maximum size를 강제할 수 있어야 한다. redirect는 기본 deny다. endpoint는 fixed configured Provider origin 아래의 origin-relative path만 사용한다.
 
-현재 JSON FastAPI/consumer transport에 binary body를 억지로 넣지 않는다. 후속 Runtime·DohaMusic 구현은 별도 streaming acquisition port를 제공한다. 실제 binary endpoint와 downloader는 이번 계약에 포함되지 않는다.
+현재 JSON FastAPI/consumer transport에 binary body를 억지로 넣지 않는다. 후속 Runtime·DohaMusic 구현은 별도 streaming acquisition port를 제공한다. Fake binary endpoint와 HTTP 독립 content port는 구현했다. Production downloader 및 ingestion은 이번 구현 범위가 아니다.
 
 별도의 `GetPayloadReference` operation은 TARGET 첫 버전에 추가하지 않는다. signed URL이 내부적으로 필요하더라도 Provider 구현 안에서 즉시 해석하고 wire Result, redirect, persistence 또는 log에 노출하지 않는다.
 
@@ -161,7 +161,7 @@ CURRENT `0.1.0` capability의 9개 operation과 strict response shape는 유지�
 }
 ```
 
-Runtime이 binary payload를 실제로 생성·보존·제공하고 authentication·error·replay test를 통과하기 전에는 `0.2.0`이나 `supported=true`를 광고하지 않는다. 현재 Fake Runtime은 계속 `0.1.0`만 광고한다.
+Production Runtime은 binary payload 생성·보존·제공 및 authentication·error·replay 검증 전 지원을 광고하지 않는다. Fake Foundation은 합성 bytes의 생성·보존·전송·error·replay를 검증한 개발용 지원이다. 기본 `GET /v1/capabilities`는 계속 0.1.0만 광고하며, `?api_contract_version=0.2.0`에서 위 exact block을 반환한다. CreateJob body의 `api_contract_version=0.2.0`과 `model_manifest_id=dohavocal.fake-model@0.2.0`이 Result 버전을 고정한다. Production authentication·rights는 미구현이며 개발용 endpoint를 Production 권한 경계로 사용하지 않는다.
 
 ## 9. Credential, cancellation과 retry
 
@@ -201,4 +201,12 @@ DohaVocal은 technical source availability와 invalidation을 소유한다. acce
 - binary acquisition port와 safe error mapping
 - 실제 byte checksum·size·media 검증과 trusted staging handoff
 
-그 다음에만 `DURABLE_LOCATOR_REQUIRED` 분석을 다시 열어 persistence owner와 schema를 확정한다. 이 문서만으로 Durable Locator, downloader, Completion adapter 또는 Runtime이 구현된 것은 아니다.
+그 다음에만 `DURABLE_LOCATOR_REQUIRED` 분석을 다시 열어 persistence owner와 schema를 확정한다. 이 문서만으로 Durable Locator, downloader, Completion adapter 또는 Production Runtime이 구현된 것은 아니다. Fake Runtime 구현과 검증 범위는 [검증 기록](../08-runtime/payload-runtime-validation.md)을 따른다.
+
+## 13. Fake 구현 세부와 한계
+
+Audio primary payload는 8 kHz, mono, PCM16 800-frame 무음 WAV(1,644 bytes), analysis는 정렬된 key와 고정 separator의 UTF-8 JSON이다. 사용자 음성·모델·GPU·외부 Provider를 사용하지 않는다. Descriptor와 bytes는 성공 전 한 번 생성·등록하며 source ID는 `payload-`와 UUID로 구성한다. Result 조회는 ID를 재발급하지 않고 저장된 Result snapshot 및 Job·Manifest·lineage를 대조한다. Source scope는 3절의 다섯 항목 tuple이다.
+
+Payload present/absent는 각각 Literal true/false와 최소 1개/최대 0개 payload schema로 검증한다. 현재 auxiliary vocabulary가 없으므로 runtime은 정확히 primary 1개만 허용한다. Content-Length는 실제 bytes 길이, Content-Type은 descriptor와 일치한다. Streaming은 512-byte 이하 chunk로 전달하며 disconnect는 transfer만 종료한다. Range·query·encoded source path는 거부하고 redirect·transcoding·non-identity Content-Encoding을 생성하지 않는다.
+
+Result metadata checksum과 lineage는 그대로 보존하고 payload byte checksum을 별도 entry에 기록한다. 0.2.0 Result의 media_type/size_bytes는 primary bytes의 media/size이며, artifact_checksum/checksum_scope는 여전히 metadata descriptor를 의미한다.

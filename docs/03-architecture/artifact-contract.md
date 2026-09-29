@@ -6,6 +6,8 @@ Vocal Artifact는 `artifact_id`, `artifact_kind`, `version`, `checksum`, `format
 
 예상 URI는 `artifact://vocal/{asset_id}/versions/{version_id}`이며 최종 문법은 Provider API 설계에서 확정합니다. 이 제안 URI는 logical Artifact reference이지 binary acquisition source가 아닙니다. 유일한 원본이나 최종 결과를 Temp에 저장하지 않습니다.
 
-Runtime Foundation의 Fake 결과는 실제 Artifact payload가 아니라 metadata candidate입니다. 호환 필드 `artifact_checksum`에는 canonical metadata descriptor의 SHA-256을 기록하고 `checksum_scope=metadata_descriptor`, `payload_present=false`로 실제 audio payload checksum과 명시적으로 구분합니다. Production Artifact 등록 전에는 이를 실제 payload 무결성 증거로 사용할 수 없습니다.
+0.1.0 Runtime Foundation의 Fake 결과는 실제 Artifact payload가 아니라 metadata candidate입니다. 호환 필드 `artifact_checksum`에는 canonical metadata descriptor의 SHA-256을 기록하고 `checksum_scope=metadata_descriptor`, `payload_present=false`로 실제 audio payload checksum과 명시적으로 구분합니다. Production Artifact 등록 전에는 이를 실제 payload 무결성 증거로 사용할 수 없습니다.
 
 CURRENT `artifact_id`는 logical Result candidate identity이며 payload source identity, byte identity 또는 DohaMusic Artifact ID가 아닙니다. TARGET payload-backed Result는 별도의 Provider artifact identity와 stable `provider_subresource` source ID, SHA-256·size·media expectation을 [Provider Payload Acquisition 계약](provider-payload-acquisition-contract.md)에 따라 제공합니다. 실제 bytes를 검증한 DohaMusic만 새 Workspace Artifact identity를 발급합니다.
+
+0.2.0 Fake Result는 primary payload bytes와 별도 byte checksum·size·media descriptor를 제공합니다. Artifact metadata와 lineage checksum의 기존 의미는 유지하며, process-local bytes의 보관은 Production Artifact 등록이 아닙니다.

@@ -4,7 +4,7 @@
 > HTTP API Foundation: [구현]
 > Production Provider Runtime: [미구현]
 > 공통 명세: `0.1.0` / `draft-baseline`
-> Payload extension: `0.2.0` [제안·미구현]
+> Payload extension: `0.2.0` [Fake Runtime 구현 / Production 미구현]
 
 [DohaStudio 공통 Provider 계약](https://github.com/DohaStudio/.github/blob/main/docs/specifications/04-provider-contract.md)을 기준으로 Capabilities, Create Job, Get Status, Cancel, Retry, Get Result, Get Model Manifest, Health와 Readiness를 구체화합니다. Job에는 ID, type, status, progress, provider/API/model version, input/output Artifact ID, settings snapshot, retry parent, error와 시간이 포함됩니다. 감사와 재현이 필요한 경우 기준 커밋 `1e4b480c8cbd6e51835f8550e685e9b136d8071d`를 사용합니다.
 
@@ -40,7 +40,7 @@ CURRENT 표는 구현된 `0.1.0`의 9개 operation이다. TARGET `0.2.0`은 [Pro
 GET /v1/jobs/{job_id}/artifacts/{provider_artifact_id}/payloads/{source_id}
 ```
 
-이 endpoint, `GetPayloadContent` capability advertisement와 binary transport는 `[미구현]`이다. `artifact_id`를 source ID로 해석하거나 signed URL·로컬 경로를 합성하지 않는다.
+이 endpoint, 명시적 0.2.0 `GetPayloadContent` 광고와 binary streaming은 Fake Runtime에 `[구현]`되었다. `artifact_id`를 source ID로 해석하거나 signed URL·로컬 경로를 합성하지 않는다.
 
 지원 capability는 `vocal_generation`, `voice_conversion`, `vocal_correction`, `vocal_analysis`입니다. Provider interface는 공통 `GetCapabilities`, `CreateJob`, `GetJobStatus`, `CancelJob`, `RetryJob`, `GetResult`, `GetModelManifest`, `Health`, `Readiness` 의미를 유지합니다.
 
@@ -54,14 +54,16 @@ in-memory lock은 단일 Provider process 안의 동시 생성에서 duplicate J
 
 ## API 측정
 
-2026-08-19 현재 FastAPI/OpenAPI 자동 검증 결과입니다.
+2026-09-29 Fake Runtime의 실제 FastAPI/OpenAPI 측정 결과입니다. 기존 0.1.0 광고는 9 operation, 명시적 0.2.0 광고는 10 operation입니다.
 
 | 항목 | 값 |
 |---|---:|
-| 전체 FastAPI route 수 | 13 |
-| DohaVocal API route 수 | 9 |
-| OpenAPI path 수 | 9 |
-| OpenAPI operation 수 | 9 |
+| 전체 FastAPI route 수 | 14 |
+| DohaVocal API route 수 | 10 |
+| OpenAPI path 수 | 10 |
+| OpenAPI operation 수 | 10 |
 | 중복 operation ID 수 | 0 |
 
-전체 route 수에는 FastAPI의 OpenAPI·문서 route 4개가 포함됩니다. DohaVocal API route와 OpenAPI operation은 위 구현 Surface의 9개입니다.
+전체 route 수에는 FastAPI의 OpenAPI·문서 route 4개가 포함됩니다. DohaVocal API route와 OpenAPI operation은 기존 Surface와 GetPayloadContent를 합한 10개입니다.
+
+기본 capability 조회는 0.1.0을 반환합니다. 명시적 `?api_contract_version=0.2.0` 조회 후 CreateJob의 version과 전용 Manifest를 지정합니다. GetResult는 Job 생성 때 고정한 버전을 사용합니다. 추가 협상 header나 session 상태는 없습니다.

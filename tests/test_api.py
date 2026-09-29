@@ -114,8 +114,8 @@ def test_openapi_measurements_and_unique_operation_ids(client):
         if method in methods
     ]
 
-    assert len(schema["paths"]) == 9
-    assert len(operation_ids) == 9
+    assert len(schema["paths"]) == 10
+    assert len(operation_ids) == 10
     assert len(operation_ids) == len(set(operation_ids))
 
 

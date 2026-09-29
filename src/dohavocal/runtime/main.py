@@ -1,4 +1,4 @@
-"""Local development entry point for the metadata-only foundation runtime."""
+"""Local development entry point for the Fake foundation runtime."""
 
 
 def main() -> None:

@@ -24,5 +24,17 @@ class CapabilitiesResponse(StrictResponse):
     supported_operations: tuple[str, ...]
 
 
+class PayloadAcquisitionCapability(StrictResponse):
+    supported: Literal[True] = True
+    source_kinds: tuple[Literal["provider_subresource"], ...] = (
+        "provider_subresource",
+    )
+    operation: Literal["GetPayloadContent"] = "GetPayloadContent"
+
+
+class PayloadCapabilitiesResponse(CapabilitiesResponse):
+    payload_acquisition: PayloadAcquisitionCapability
+
+
 class ErrorResponse(StrictResponse):
     error: ErrorDetail
