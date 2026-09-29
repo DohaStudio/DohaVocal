@@ -3,15 +3,15 @@
 > 문서 상태: [진행 중]
 > Foundation 상태: Runtime Foundation, Provider API Foundation, Fake Provider [구현]
 > 모델 상태: 실제 AI Singing Voice, Voice Conversion, Vocal Correction, Training, Evaluation, Production Runtime [미구현]
-> Payload 계약: `0.1.0` metadata-only [구현] / `0.2.0` acquisition authority [제안·미구현]
+> Payload 계약: `0.1.0` metadata-only [구현] / `0.2.0` payload-backed Fake Runtime [구현]
 > 공통 명세: `0.1.0` / `draft-baseline`
 > 명세 기준: `DohaStudio/.github` `main` (`1e4b480c8cbd6e51835f8550e685e9b136d8071d`)
 
 DohaVocal은 DohaMusic의 보컬 AI Provider입니다. AI Singing Voice, Voice Conversion, Vocal Correction, Vocal Dataset, Training, Evaluation과 독립 Runtime을 기술적으로 담당할 계획입니다.
 
-현재 저장소에는 공통 Vocal Job 계약, in-memory lifecycle·idempotency, metadata-only Fake Provider와 FastAPI Runtime Foundation이 구현되어 있습니다. Fake Provider는 실제 오디오를 읽거나 쓰지 않으며 모델, GPU, Dataset, Checkpoint와 외부 Provider를 사용하지 않습니다.
+현재 저장소에는 공통 Vocal Job 계약, in-memory lifecycle·idempotency, metadata-only 및 payload-backed Fake Provider와 FastAPI Runtime Foundation이 구현되어 있습니다. Fake Provider는 사용자 오디오에 접근하지 않으며 모델, GPU, Dataset, Checkpoint와 외부 Provider를 사용하지 않습니다.
 
-논리 Provider 식별자는 Runtime 구현 방식과 분리된 `dohavocal`입니다. 현재 구현은 metadata-only Fake Runtime이며 Fake 모델의 Manifest 식별자는 `dohavocal.fake-model@0.1.0`입니다. 이후 local·remote·Production Runtime으로 구현이 바뀌어도 같은 논리 Provider의 `provider_id`는 유지합니다.
+논리 Provider 식별자는 Runtime 구현 방식과 분리된 `dohavocal`입니다. Fake Manifest는 기존 `dohavocal.fake-model@0.1.0`과 payload 전용 `dohavocal.fake-model@0.2.0`으로 구분합니다. 이후 local·remote·Production Runtime으로 구현이 바뀌어도 같은 논리 Provider의 `provider_id`는 유지합니다.
 
 ## 책임
 
@@ -73,11 +73,11 @@ Voice Enrollment Sample과 Recording Take는 자동으로 Training Dataset이 �
 | 임시 파일 | `DohaTemp/vocal` | 금지 |
 | Mix·Export·Preview·Snapshot | `DohaArtifacts/music` | DohaVocal 범위 아님 |
 
-Runtime Foundation은 Artifact payload나 로컬 저장 경로에 접근하지 않고 파생 후보의 ID, checksum과 lineage metadata만 in-memory로 생성합니다. Production Artifact Catalog·Resolver 연동은 [미구현]입니다.
+Runtime Foundation은 로컬 저장 경로와 Production Artifact에 접근하지 않습니다. 파생 후보 metadata와 0.2.0 합성 Fake bytes는 in-memory로 보관합니다. Production Artifact Catalog·Resolver 연동은 [미구현]입니다.
 
-Fake 결과의 `artifact_checksum`은 실제 audio payload checksum이 아니라 canonical metadata descriptor의 SHA-256이며 `checksum_scope=metadata_descriptor`, `payload_present=false`로 구분합니다.
+Fake 결과의 `artifact_checksum`은 실제 audio payload checksum이 아니라 canonical metadata descriptor의 SHA-256이며 `checksum_scope=metadata_descriptor`로 구분합니다. 0.1.0은 `payload_present=false`이며, 0.2.0의 실제 byte checksum은 별도 `payloads[].payload_checksum`입니다.
 
-미래 payload-backed Result는 [Provider Payload Acquisition 계약](docs/03-architecture/provider-payload-acquisition-contract.md)의 `0.2.0` TARGET을 따릅니다. stable non-secret `provider_subresource` identity와 별도 binary acquisition operation을 사용하고 credential, signed URL과 로컬 경로를 Result에 포함하지 않습니다. 이 계약의 Runtime endpoint와 실제 bytes는 아직 구현하지 않았습니다.
+구현된 payload-backed Fake Result는 [Provider Payload Acquisition 계약](docs/03-architecture/provider-payload-acquisition-contract.md)의 `0.2.0` TARGET을 따릅니다. stable non-secret `provider_subresource` identity와 별도 binary acquisition operation을 사용하고 credential, signed URL과 로컬 경로를 Result에 포함하지 않습니다. Fake binary endpoint와 deterministic WAV/JSON bytes는 구현했습니다. Production durable Runtime, authentication, rights enforcement와 실제 AI inference는 [미구현]입니다.
 
 ## Runtime Foundation 실행
 
@@ -89,6 +89,12 @@ dohavocal
 ```
 
 기본 개발 주소는 `http://127.0.0.1:8080`이며 `/health`, `/ready`, `/v1/capabilities`, `/v1/jobs`와 Model Manifest 조회 API를 제공합니다. 이 실행 경로는 개발·계약 검증용 Fake Runtime이며 Production Runtime이 아닙니다.
+
+### 명시적 0.2.0 선택
+
+기본 `GET /v1/capabilities`는 기존 0.1.0 shape를 유지합니다. `GET /v1/capabilities?api_contract_version=0.2.0`으로 10개 operation과 payload 지원을 확인한 뒤, CreateJob body에 `api_contract_version=0.2.0`, `model_manifest_id=dohavocal.fake-model@0.2.0`을 지정합니다. GetResult는 저장된 Job 버전을 따르며 descriptor의 Job·artifact·source를 이용해 `GET /v1/jobs/{job_id}/artifacts/{provider_artifact_id}/payloads/{source_id}`에서 bytes를 받습니다.
+
+Fake bytes는 100 ms 무음 WAV 또는 canonical analysis JSON입니다. 단일 process 수명 안에서만 Result/source/bytes replay를 보장하며, 재시작 시 소실됩니다. `available_until=null`은 이 개발용 process 수명 범위의 availability이며 운영 보존 약속이 아닙니다. 자세한 측정과 한계는 [검증 기록](docs/08-runtime/payload-runtime-validation.md)을 참조합니다.
 
 ## 문서 읽기 순서
 

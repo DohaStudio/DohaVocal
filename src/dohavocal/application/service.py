@@ -1,9 +1,9 @@
 """Thin application boundary shared by the HTTP API and tests."""
 
 from dohavocal.application.ports import VocalProvider
-from dohavocal.domain.artifacts import VocalArtifact
 from dohavocal.domain.jobs import AnyVocalJob, CreateVocalJobRequest, JobType
 from dohavocal.domain.manifests import ModelManifest
+from dohavocal.domain.payloads import AnyVocalArtifact, PayloadContent
 
 
 class VocalRuntimeService:
@@ -25,11 +25,21 @@ class VocalRuntimeService:
     def retry_job(self, job_id: str) -> AnyVocalJob:
         return self._provider.retry_job(job_id)
 
-    def get_result(self, job_id: str) -> VocalArtifact:
+    def get_result(self, job_id: str) -> AnyVocalArtifact:
         return self._provider.get_result(job_id)
 
     def get_model_manifest(self, model_manifest_id: str) -> ModelManifest:
         return self._provider.get_model_manifest(model_manifest_id)
+
+    def get_payload_content(
+        self, job_id: str, provider_artifact_id: str, source_id: str
+    ) -> PayloadContent:
+        return self._provider.get_payload_content(
+            job_id, provider_artifact_id, source_id
+        )
+
+    def supported_contract_versions(self) -> tuple[str, ...]:
+        return self._provider.supported_contract_versions()
 
     def health(self) -> bool:
         return self._provider.health()

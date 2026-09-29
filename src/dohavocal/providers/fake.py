@@ -1,14 +1,19 @@
-"""Deterministic metadata-only Provider for contract and lifecycle validation."""
+"""Deterministic metadata and binary Fake Provider for contract validation."""
 
 from __future__ import annotations
 
 import hashlib
+import io
 import json
+import wave
 from datetime import UTC, datetime
 from typing import Any
 from uuid import uuid4
 
+from pydantic import ValidationError
+
 from dohavocal.artifacts.memory import InMemoryArtifactStore
+from dohavocal.artifacts.payload_memory import InMemoryPayloadStore, replay_conflict
 from dohavocal.config import RuntimeSettings
 from dohavocal.domain.artifacts import ArtifactLineage, VocalArtifact
 from dohavocal.domain.errors import (
@@ -18,6 +23,7 @@ from dohavocal.domain.errors import (
     InvalidStateTransitionError,
     NotFoundError,
     UnsupportedCapabilityError,
+    VocalRuntimeError,
 )
 from dohavocal.domain.jobs import (
     ALLOWED_TRANSITIONS,
@@ -34,6 +40,15 @@ from dohavocal.domain.jobs import (
     VoiceConversionJob,
 )
 from dohavocal.domain.manifests import ModelManifest
+from dohavocal.domain.payloads import (
+    PRIMARY_ROLES,
+    AnyVocalArtifact,
+    PayloadArtifact,
+    PayloadContent,
+    PayloadEntry,
+    PayloadSource,
+    is_opaque_id,
+)
 from dohavocal.providers.state import InMemoryJobStore
 
 JOB_CLASSES = {
@@ -45,17 +60,19 @@ JOB_CLASSES = {
 
 
 class FakeVocalProvider:
-    """No audio I/O, model download, subprocess, network call, or GPU execution."""
+    """No user audio, model download, subprocess, network call, or GPU execution."""
 
     def __init__(
         self,
         settings: RuntimeSettings | None = None,
         jobs: InMemoryJobStore | None = None,
         artifacts: InMemoryArtifactStore | None = None,
+        payloads: InMemoryPayloadStore | None = None,
     ) -> None:
         self.settings = settings or RuntimeSettings()
         self.jobs = jobs or InMemoryJobStore()
         self.artifacts = artifacts or InMemoryArtifactStore()
+        self.payloads = payloads or InMemoryPayloadStore()
         manifest_payload = f"{self.settings.model_manifest_id}:metadata-only".encode()
         self._manifest = ModelManifest(
             model_manifest_id=self.settings.model_manifest_id,
@@ -75,6 +92,26 @@ class FakeVocalProvider:
             artifact_checksum=hashlib.sha256(manifest_payload).hexdigest(),
             created_at=datetime.now(UTC),
         )
+        self._payload_manifest = self._manifest.model_copy(
+            update={
+                "model_manifest_id": "dohavocal.fake-model@0.2.0",
+                "model_version": "0.2.0",
+                "api_contract_version": "0.2.0",
+                "output_formats": ("audio/wav", "application/json"),
+                "runtime_environment": {
+                    "execution": "payload-backed-fake",
+                    "gpu": "not-used",
+                    "persistence": "process-local",
+                    "authentication": "not-implemented-development-only",
+                },
+                "artifact_checksum": hashlib.sha256(
+                    b"dohavocal.fake-model@0.2.0:payload-backed-fake"
+                ).hexdigest(),
+            }
+        )
+
+    def supported_contract_versions(self) -> tuple[str, ...]:
+        return ("0.1.0", "0.2.0")
 
     def get_capabilities(self) -> tuple[JobType, ...]:
         return tuple(JobType)
@@ -127,6 +164,9 @@ class FakeVocalProvider:
                 ),
             )
         artifact = self._build_artifact(job.job_id, request)
+        if request.api_contract_version == "0.2.0":
+            artifact, content = self._with_payload(artifact, request.capability)
+            self.payloads.add(artifact, content)
         self.artifacts.add(artifact)
         return self.transition(
             job.job_id,
@@ -159,7 +199,7 @@ class FakeVocalProvider:
         self.jobs.replace(updated)
         return updated
 
-    def get_result(self, job_id: str) -> VocalArtifact:
+    def get_result(self, job_id: str) -> AnyVocalArtifact:
         job = self.jobs.get(job_id)
         if job.status != JobStatus.SUCCEEDED or not job.output_artifact_ids:
             raise ConflictError(
@@ -168,9 +208,69 @@ class FakeVocalProvider:
                 retryable=job.status in {JobStatus.QUEUED, JobStatus.RUNNING},
                 stage="result_lookup",
             )
-        return self.artifacts.get(job.output_artifact_ids[0])
+        result = self.artifacts.get(job.output_artifact_ids[0])
+        if job.api_contract_version == "0.2.0":
+            try:
+                result = PayloadArtifact.model_validate(result.model_dump())
+            except ValidationError:
+                raise replay_conflict() from None
+            entry = result.payloads[0]
+            if (
+                entry.role != PRIMARY_ROLES[job.job_type]
+                or result.run_id != job.job_id
+                or result.producer_id != job.provider_id
+                or result.artifact_id != job.output_artifact_ids[0]
+                or result.output_asset_version_id != job.output_asset_version_ids[0]
+                or result.lineage.model_manifest_id != job.model_manifest_id
+                or result.lineage.settings_snapshot != job.settings_snapshot
+                or entry.expected_media_type
+                not in self._payload_manifest.output_formats
+            ):
+                raise replay_conflict()
+            self.payloads.verify_result(result)
+        return result
+
+    def get_payload_content(
+        self, job_id: str, provider_artifact_id: str, source_id: str
+    ) -> PayloadContent:
+        if not all(
+            is_opaque_id(value) for value in (job_id, provider_artifact_id, source_id)
+        ):
+            raise VocalRuntimeError(
+                "PROVIDER_PAYLOAD_INVALID_SOURCE_IDENTITY",
+                "Payload 요청 식별자가 유효하지 않습니다.",
+                stage="payload_acquisition",
+            )
+        job = self.jobs.get(job_id)
+        if job.api_contract_version != "0.2.0":
+            raise ContractVersionError(
+                "CONTRACT_VERSION_UNSUPPORTED",
+                "Payload acquisition에는 0.2.0 Job이 필요합니다.",
+            )
+        result = self.get_result(job_id)
+        if not isinstance(result, PayloadArtifact):
+            raise replay_conflict()
+        entry = result.payloads[0]
+        if provider_artifact_id != entry.provider_artifact_id:
+            raise NotFoundError(
+                "PROVIDER_PAYLOAD_ARTIFACT_MISMATCH",
+                "Job의 Artifact와 일치하지 않습니다.",
+                stage="payload_acquisition",
+            )
+        if source_id != entry.source.source_id:
+            code = (
+                "PROVIDER_PAYLOAD_SOURCE_BINDING_MISMATCH"
+                if self.payloads.contains_source(source_id)
+                else "PROVIDER_PAYLOAD_SOURCE_NOT_FOUND"
+            )
+            raise NotFoundError(
+                code, "Payload source가 일치하지 않습니다.", stage="payload_acquisition"
+            )
+        return self.payloads.acquire(result)
 
     def get_model_manifest(self, model_manifest_id: str) -> ModelManifest:
+        if model_manifest_id == self._payload_manifest.model_manifest_id:
+            return self._payload_manifest.model_copy(deep=True)
         if model_manifest_id != self._manifest.model_manifest_id:
             raise NotFoundError(
                 "MODEL_MANIFEST_NOT_FOUND",
@@ -244,17 +344,64 @@ class FakeVocalProvider:
                 "CAPABILITY_NOT_SUPPORTED",
                 "요청한 capability를 지원하지 않습니다.",
             )
-        if request.api_contract_version != self.settings.api_contract_version:
+        if request.api_contract_version not in self.supported_contract_versions():
             raise ContractVersionError(
                 "CONTRACT_VERSION_UNSUPPORTED",
                 "요청한 API contract version을 지원하지 않습니다.",
             )
-        if request.model_manifest_id != self._manifest.model_manifest_id:
+        manifest = (
+            self._payload_manifest
+            if request.api_contract_version == "0.2.0"
+            else self._manifest
+        )
+        if request.model_manifest_id != manifest.model_manifest_id:
             raise NotFoundError(
                 "MODEL_MANIFEST_NOT_FOUND",
                 "Model Manifest를 찾을 수 없습니다.",
                 stage="job_creation",
             )
+
+    @staticmethod
+    def _with_payload(
+        artifact: VocalArtifact, capability: JobType
+    ) -> tuple[PayloadArtifact, bytes]:
+        if capability == JobType.VOCAL_ANALYSIS:
+            content = json.dumps(
+                artifact.analysis_result,
+                ensure_ascii=False,
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+            media_type = "application/json"
+        else:
+            # 100 ms of synthetic silence; no input audio or inference.
+            buffer = io.BytesIO()
+            with wave.open(buffer, "wb") as output:
+                output.setnchannels(1)
+                output.setsampwidth(2)
+                output.setframerate(8000)
+                output.writeframes(b"\x00\x00" * 800)
+            content = buffer.getvalue()
+            media_type = "audio/wav"
+        entry = PayloadEntry(
+            provider_artifact_id=artifact.artifact_id,
+            role=PRIMARY_ROLES[capability],
+            source=PayloadSource(source_id=f"payload-{uuid4()}"),
+            payload_checksum=hashlib.sha256(content).hexdigest(),
+            expected_size_bytes=len(content),
+            expected_media_type=media_type,
+            available_until=None,
+        )
+        result = PayloadArtifact.model_validate(
+            {
+                **artifact.model_dump(),
+                "payload_present": True,
+                "payloads": (entry,),
+                "media_type": media_type,
+                "size_bytes": len(content),
+            }
+        )
+        return result, content
 
     @staticmethod
     def _fingerprint(request: CreateVocalJobRequest) -> str:

@@ -32,3 +32,7 @@ DohaVocal이 source와 binary availability를, DohaMusic이 Workspace authorizat
 ## 재검토
 
 두 개 이상의 Provider가 동일한 source/acquisition 의미를 실제로 소비하거나, fixed Provider subresource로 표현할 수 없는 배포 요구가 검증되면 Common Contract 승격과 source kind 확장을 재검토한다.
+
+## 구현 상태 (2026-09-29)
+
+기존 결정은 유지한다. 0.1.0 호환과 명시적 0.2.0 payload-backed Fake Runtime, deterministic WAV/JSON, binary endpoint와 단일 process replay 검증을 구현했다. 이는 개발용 Foundation이며 restart/reclaim durability, Production authentication·rights 및 실제 AI inference는 미구현이다. 원래 영향 절의 후속 구현 항목 중 Fake 부분만 완료했으며 Production 요건을 완화하지 않는다.

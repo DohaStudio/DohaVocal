@@ -2,6 +2,14 @@
 
 ## [미출시]
 
+### Payload-backed Fake Runtime Foundation
+
+- 기존 0.1.0 shape를 보존하며 명시적 0.2.0 capability 조회·Job version·전용 Manifest를 추가했다.
+- capability별 primary payload descriptor와 process-local WAV/JSON bytes, read-only streaming GetPayloadContent를 구현했다.
+- 실제 byte SHA-256·size, exact Job/artifact/source binding, Result replay seal, safe error와 adversarial source 검증을 추가했다.
+- ASGI disconnect, repeated acquisition, idempotency·lineage 및 기존 0.1.0 회귀 테스트를 추가했다.
+- Production durability·authentication·rights와 실제 AI inference는 포함하지 않는다.
+
 ### 추가
 
 - Python 3.12 `src/dohavocal` Runtime bootstrap과 FastAPI Provider API Foundation
@@ -29,7 +37,7 @@
 - 실제 AI Singing Voice, Voice Conversion, Vocal Correction 엔진
 - Dataset Migration, Training, Evaluation
 - User-specific Adapter, Production Runtime과 영속화·실제 Artifact 연동
-- 실제 binary payload 생성·acquisition endpoint·Production 인증과 DohaMusic consumer·Durable Locator 연동
+- Production payload 생성·인증과 실제 DohaMusic network E2E·Durable Locator 연동
 
 ### 수정
 

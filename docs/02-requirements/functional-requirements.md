@@ -2,7 +2,7 @@
 
 > 문서 상태: [계획]
 > Runtime Foundation: FR-010, FR-011의 Fake metadata 계약 [구현]
-> 실제 모델·Artifact payload·Consent Gate·Training 요구사항: [미구현]
+> 실제 모델·Production Artifact payload·Consent Gate·Training 요구사항: [미구현] / 합성 Fake payload: [구현]
 
 | ID | 요구사항 |
 |---|---|
