@@ -1,6 +1,7 @@
 """Runtime HTTP API composition root."""
 
 from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 
 import anyio
 from fastapi import FastAPI, Request
@@ -18,7 +19,7 @@ from dohavocal.domain.errors import (
 from dohavocal.domain.jobs import AnyVocalJob, CreateVocalJobRequest
 from dohavocal.domain.manifests import ModelManifest
 from dohavocal.domain.payloads import AnyVocalArtifact
-from dohavocal.providers import FakeVocalProvider
+from dohavocal.runtime.composition import build_provider
 
 from .models import (
     CapabilitiesResponse,
@@ -29,10 +30,25 @@ from .models import (
 )
 
 
-def create_app(service: VocalRuntimeService | None = None) -> FastAPI:
-    settings = RuntimeSettings()
-    runtime_service = service or VocalRuntimeService(FakeVocalProvider(settings))
+def create_app(
+    service: VocalRuntimeService | None = None,
+    *,
+    settings: RuntimeSettings | None = None,
+) -> FastAPI:
+    settings = settings or RuntimeSettings()
+    owned_provider = build_provider(settings) if service is None else None
+    runtime_service = service or VocalRuntimeService(owned_provider)
+
+    @asynccontextmanager
+    async def lifespan(app):
+        try:
+            yield
+        finally:
+            if owned_provider is not None:
+                owned_provider.close()
+
     app = FastAPI(
+        lifespan=lifespan,
         title="DohaVocal Provider Runtime",
         version="0.2.0",
         description="Fake Provider 기반 Runtime Foundation",

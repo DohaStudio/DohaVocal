@@ -126,6 +126,13 @@ class CreateVocalJobRequest(FrozenModel):
     def _reject_sensitive_or_path_values(cls, value: Any, key: str = "") -> None:
         forbidden_keys = {
             "api_key",
+            "authorization",
+            "cookie",
+            "bearer_token",
+            "access_token",
+            "refresh_token",
+            "signed_url",
+            "credentials",
             "credential",
             "dataset_path",
             "model_path",
@@ -142,7 +149,14 @@ class CreateVocalJobRequest(FrozenModel):
         elif isinstance(value, (list, tuple)):
             for item in value:
                 cls._reject_sensitive_or_path_values(item, key)
-        elif isinstance(value, str) and cls._looks_like_path(value):
+        elif isinstance(value, str) and (
+            cls._looks_like_path(value)
+            or re.match(r"(?i)^bearer\s+", value)
+            or re.search(
+                r"(?i)[?&](signature|sig|token|x-amz-credential|x-amz-signature)=",
+                value,
+            )
+        ):
             raise ValueError("Provider 요청에 파일 경로를 포함할 수 없습니다.")
 
     @staticmethod

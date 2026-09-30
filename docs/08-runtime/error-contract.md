@@ -25,3 +25,9 @@ TARGET payload acquisition은 `PROVIDER_RESULT_REPLAY_CONFLICT`, `PROVIDER_PAYLO
 | 409 | `PROVIDER_RESULT_REPLAY_CONFLICT` | snapshot·binding·bytes 불변성 위반 | false |
 
 잘못된 URL이 route 자체와 맞지 않으면 framework의 안전한 404를 반환할 수 있습니다. Lookup과 오류는 Job을 수정하지 않습니다. 전송 시작 후 disconnect는 JSON 오류로 바꾸지 않고 transfer를 종료합니다.
+
+## Durable adapter 오류
+
+SQLite mode의 storage open/lock/shutdown failure는 `DURABLE_STORE_UNAVAILABLE` (503), 잘못된 trusted configuration은 `DURABLE_CONFIGURATION_INVALID`, schema magic/version/구조 불일치는 `DURABLE_SCHEMA_INCOMPATIBLE`, DB 구조 손상은 `DURABLE_STORE_CORRUPT`로 거부한다. startup 오류는 Runtime 시작을 중단한다. CLI는 DB 경로와 exception stack을 출력하지 않는다.
+
+persisted canonical snapshot/seal, descriptor, source binding 또는 bytes checksum/size 손상은 기존 `PROVIDER_RESULT_REPLAY_CONFLICT` (409), missing BLOB은 `PROVIDER_PAYLOAD_UNAVAILABLE` (404)다. 같은 key의 다른 fingerprint는 기존 `IDEMPOTENCY_CONFLICT` (409)다. 자동 재생성·Job 변경·무한 retry는 하지 않는다. 모두 안전한 기존 envelope를 사용한다.

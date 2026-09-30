@@ -40,3 +40,9 @@ __pycache__/
 Thumbs.db
 .idea/
 .vscode/
+
+# Explicit durable Runtime state is always outside the repository.
+*.sqlite3
+*.sqlite3-journal
+*.sqlite3-wal
+*.sqlite3-shm

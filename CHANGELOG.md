@@ -2,6 +2,15 @@
 
 ## [미출시]
 
+### Durable Runtime persistence foundation
+
+- 선택적 SQLite mode에서 Job·idempotency·Result·source·payload BLOB을 한 transaction으로 보존한다.
+- 독립 process reopen과 exact replay, corruption fail-closed, atomic rollback 및 local cross-process idempotency를 검증한다.
+- schema version 1, 명시적 bootstrap, 안전한 configuration/readiness/shutdown과 ADR-007을 추가한다.
+- 기존 memory mode와 0.1.0/0.2.0 wire를 유지한다. 기존 process-local state는 migration하지 않는다.
+- 실제 AI, Production auth/rights, 대용량 모델 저장소와 retention/deletion lifecycle은 포함하지 않는다.
+
+
 ### Payload-backed Fake Runtime Foundation
 
 - 기존 0.1.0 shape를 보존하며 명시적 0.2.0 capability 조회·Job version·전용 Manifest를 추가했다.
@@ -36,7 +45,7 @@
 
 - 실제 AI Singing Voice, Voice Conversion, Vocal Correction 엔진
 - Dataset Migration, Training, Evaluation
-- User-specific Adapter, Production Runtime과 영속화·실제 Artifact 연동
+- User-specific Adapter, Production Runtime 전체와 실제 Artifact 연동
 - Production payload 생성·인증과 실제 DohaMusic network E2E·Durable Locator 연동
 
 ### 수정

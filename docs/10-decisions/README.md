@@ -10,7 +10,8 @@
 | [ADR-004](ADR-004-immutable-vocal-asset-lineage.md) | 불변 Vocal Asset 계보 | [제안] |
 | [ADR-005](ADR-005-vocal-processing-mix-boundary.md) | Vocal 처리와 DohaMusic Mix 책임 경계 | [제안] |
 | [ADR-006](ADR-006-provider-payload-acquisition-authority.md) | Provider Payload Acquisition Authority | [제안] |
+| [ADR-007](ADR-007-durable-runtime-persistence.md) | SQLite durable Runtime persistence | [제안] |
 
 결정이 대체되면 기존 ADR을 삭제하지 않고 상태와 새 ADR 링크를 기록합니다.
 
-ADR-006 구현 추적: payload-backed Fake Runtime은 구현했으며, 결정 상태는 제안으로 유지합니다. Production durable Runtime·authentication·rights는 미구현입니다.
+ADR-006 구현 추적: payload-backed Fake Runtime은 구현했으며, 결정 상태는 제안으로 유지합니다. ADR-007의 durable persistence foundation은 구현했으며 Production Runtime 전체·authentication·rights는 미구현입니다.
