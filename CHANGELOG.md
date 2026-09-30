@@ -2,6 +2,14 @@
 
 ## [미출시]
 
+### Manifest restart invariance 수정
+
+- 같은 Fake Manifest ID의 전체 document를 source-controlled canonical 정의로 고정했다.
+- `created_at`은 각 descriptor의 최초 develop publication 기록을 사용하고 Runtime startup/DB 등록 시각과 분리했다.
+- persistence metadata를 mode와 무관하게 만들고 설정으로 같은 ID의 내용을 바꾸는 경로를 거부한다.
+- memory/SQLite 독립 process 20-pair equality, durable Job/Result/Manifest binding과 strict Music DTO 호환성을 검증한다. API/SQLite schema는 변경하지 않는다.
+
+
 ### Durable Runtime persistence foundation
 
 - 선택적 SQLite mode에서 Job·idempotency·Result·source·payload BLOB을 한 transaction으로 보존한다.

@@ -123,3 +123,5 @@ Fake bytes는 100 ms 무음 WAV 또는 canonical analysis JSON입니다. 기본 
 Python composition은 `create_app(settings=RuntimeSettings(runtime_mode="sqlite", database_path=trusted_path))`를 사용한다. 테스트는 context-managed TestClient, CLI는 FastAPI lifespan으로 종료한다. 각 transaction connection은 commit/rollback 후 닫히며 shutdown 이후 저장소 호출은 거부된다. startup 실패는 서버 시작을 막고 실행 중 storage failure는 `/ready` 503, process health는 `/health` 200이다.
 
 선택 근거와 복구 정책은 [ADR-007](docs/10-decisions/ADR-007-durable-runtime-persistence.md), 스키마와 실행 증거는 [durable 검증 기록](docs/08-runtime/durable-runtime-persistence-validation.md)을 따른다. Existing process-local runtime state is non-durable and is not migrated. 삭제·권리철회·historical identity와 bytes 정리는 서로 다른 authority이며 임의 cleanup API를 추가하지 않는다.
+
+Fake Model Manifest는 memory/SQLite mode와 process restart에 관계없이 동일 ID에 동일 document를 반환합니다. `created_at`은 Runtime 시작 시각이 아닌 역사적 descriptor publication 시각입니다. 실제 storage mode는 실행 설정에서 선택하며 immutable Manifest의 `persistence=runtime-configured`를 현재 인스턴스의 durability 보장으로 해석하지 않습니다. [Manifest authority](docs/04-models/model-manifest-schema.md)와 [재시작 검증](docs/08-runtime/manifest-restart-invariance-validation.md)을 참조합니다.
