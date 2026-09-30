@@ -1,6 +1,6 @@
 # Provider Payload Acquisition 계약
 
-> 문서 상태: [제안: wire authority] / [구현: Fake endpoint·binary payload] / [미구현: Production durability·인증·권리]
+> 문서 상태: [제안: wire authority] / [구현: Fake endpoint·binary payload] / [구현: SQLite durable foundation] / [미구현: Production 인증·권리]
 > CURRENT API contract: `0.1.0` metadata-only
 > TARGET API contract: `0.2.0` payload acquisition extension
 > 관련 결정: [ADR-006](../10-decisions/ADR-006-provider-payload-acquisition-authority.md)
@@ -19,7 +19,7 @@ Provider Result candidate identity
 != DohaMusic Artifact identity
 ```
 
-이 문서는 wire와 architecture authority를 정의한다. 0.2.0 Fake Runtime의 합성 Payload 생성과 binary endpoint는 `[구현]`이다. Production credential integration·persistence·rights와 실제 DohaMusic network E2E는 `[미구현]`이다. 아래 Production 요구사항은 그대로 유지하며 Fake 개발용 한계를 운영 보장으로 승격하지 않는다.
+이 문서는 wire와 architecture authority를 정의한다. 0.2.0 Fake Runtime의 합성 Payload 생성과 binary endpoint는 `[구현]`이다. SQLite persistence foundation은 구현했으며 Production credential integration·rights와 실제 DohaMusic network E2E는 `[미구현]`이다. 아래 Production 요구사항은 그대로 유지하며 Fake 개발용 한계를 운영 보장으로 승격하지 않는다.
 
 ## 2. Versioned Result variant
 
@@ -125,9 +125,9 @@ TARGET Result의 `payloads`는 ordered 1:N entry collection이다. replay를 위
 
 변경은 `PROVIDER_RESULT_REPLAY_CONFLICT`다. credential이나 Provider 내부 storage topology 변화는 Result field가 아니며 replay identity를 바꾸지 않는다. 내부 object relocation이 필요하면 기존 stable source ID가 새 위치를 해석해야 한다. 같은 Result에서 새 source ID로 조용히 교체하지 않는다.
 
-이 불변성은 같은 process 안의 반복 호출뿐 아니라 Provider restart와 DohaMusic reclaim 뒤의 replay에도 적용한다. TARGET Runtime은 Result와 source binding을 durable하게 보존하거나 동일 identity를 결정적으로 복구해야 한다. 현재 in-memory Fake Runtime은 이 production 조건을 충족하지 않는다. 이번 Foundation에서는 명시적 0.2.0 선택에 개발용 Fake payload 지원만 광고한다. Production-ready 또는 restart durability를 의미하지 않으며 기본 0.1.0 광고는 유지한다.
+이 불변성은 같은 process 안의 반복 호출뿐 아니라 Provider restart와 DohaMusic reclaim 뒤의 replay에도 적용한다. TARGET Runtime은 Result와 source binding을 durable하게 보존하거나 동일 identity를 결정적으로 복구해야 한다. 기본 in-memory mode는 이 restart 조건을 충족하지 않는다. 선택적 SQLite mode는 persisted Job/Result/source/BLOB을 읽어 exact replay를 보장한다. 개발용 Fake 지원이며 Production-ready를 의미하지 않는다. 기본 0.1.0 광고는 유지한다.
 
-`available_until`은 stable source lifetime이며 credential expiry가 아니다. timezone-aware UTC timestamp 또는 `null`이다. finite 값이면 그 시점 전까지 권리·삭제 정책이 허용하는 source를 제공해야 한다. `null`이면 explicit deletion, rights revocation 또는 source invalidation 전까지 기술적으로 제공한다는 뜻이다. Provider가 이를 운영 환경에서 보장할 Runtime persistence와 cleanup acknowledgement는 `[미구현]`이다. Fake의 `null`은 단일 process 수명 안에서만 적용하며 process 종료는 source invalidation이다.
+`available_until`은 stable source lifetime이며 credential expiry가 아니다. timezone-aware UTC timestamp 또는 `null`이다. finite 값이면 그 시점 전까지 권리·삭제 정책이 허용하는 source를 제공해야 한다. `null`이면 explicit deletion, rights revocation 또는 source invalidation 전까지 기술적으로 제공한다는 뜻이다. durable foundation의 `null`은 restart로 만료되지 않는다. 기본 memory mode에서는 process 종료로 source가 소실된다. Production retention/rights 보장과 cleanup acknowledgement는 `[미구현]`이다.
 
 source ID는 credential 또는 access capability가 아니다. source가 존재하더라도 acquisition 요청마다 authentication과 현재 권리 상태를 다시 확인한다.
 

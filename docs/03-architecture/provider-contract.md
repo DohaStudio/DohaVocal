@@ -48,7 +48,7 @@ GET /v1/jobs/{job_id}/artifacts/{provider_artifact_id}/payloads/{source_id}
 
 scope는 `provider_id + capability + project_id + requested_by + idempotency_key`입니다. Fingerprint는 idempotency key를 제외한 전체 정규화 요청을 UTF-8 JSON의 정렬된 key와 고정 separator로 직렬화한 뒤 SHA-256으로 계산합니다. 같은 scope·fingerprint는 기존 Job을 반환하고, 같은 scope의 다른 fingerprint는 `IDEMPOTENCY_CONFLICT`로 거부합니다.
 
-in-memory lock은 단일 Provider process 안의 동시 생성에서 duplicate Job 등록을 막습니다. 여러 process·worker 사이의 idempotency와 상태 동기화는 보장하지 않으며 Production persistence 범위에서 별도로 구현해야 합니다.
+in-memory lock은 단일 Provider process 안의 동시 생성에서 duplicate Job 등록을 막습니다. 선택적 SQLite mode는 같은 local DB를 여는 process 간 BEGIN IMMEDIATE와 unique scope로 idempotency를 보존합니다. network filesystem·multi-node HA 및 Production worker는 미지원입니다.
 
 저장소 전용 입력은 capability별 `job_input` extension으로 제한합니다. Lyrics·melody DTO를 조직 공통 계약으로 확정하지 않습니다.
 

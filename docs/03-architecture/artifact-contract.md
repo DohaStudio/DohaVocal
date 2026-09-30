@@ -10,4 +10,4 @@ Vocal Artifact는 `artifact_id`, `artifact_kind`, `version`, `checksum`, `format
 
 CURRENT `artifact_id`는 logical Result candidate identity이며 payload source identity, byte identity 또는 DohaMusic Artifact ID가 아닙니다. TARGET payload-backed Result는 별도의 Provider artifact identity와 stable `provider_subresource` source ID, SHA-256·size·media expectation을 [Provider Payload Acquisition 계약](provider-payload-acquisition-contract.md)에 따라 제공합니다. 실제 bytes를 검증한 DohaMusic만 새 Workspace Artifact identity를 발급합니다.
 
-0.2.0 Fake Result는 primary payload bytes와 별도 byte checksum·size·media descriptor를 제공합니다. Artifact metadata와 lineage checksum의 기존 의미는 유지하며, process-local bytes의 보관은 Production Artifact 등록이 아닙니다.
+0.2.0 Fake Result는 primary payload bytes와 별도 byte checksum·size·media descriptor를 제공합니다. Artifact metadata와 lineage checksum의 기존 의미는 유지하며, memory 또는 SQLite durable bytes 보관은 DohaMusic Production Artifact 등록이 아닙니다.

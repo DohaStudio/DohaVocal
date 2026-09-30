@@ -34,4 +34,4 @@ recorded_vocal_raw
 
 연속 처리에서는 최초 원본을 `source_asset_version_id`, 직전 후보를 `parent_asset_version_id`로 유지하고 동일 `processing_chain_id`를 다음 요청에 전달할 수 있습니다. Fake checksum은 실제 음원이 아니라 `job_id`, capability, source/parent, processing chain, Model Manifest, settings와 processing type으로 구성한 canonical metadata descriptor의 SHA-256입니다.
 
-0.2.0 Fake는 위 lineage를 재작성하지 않고 별도 payload descriptor와 합성 bytes를 process-local store에 결속합니다. acquisition과 transfer retry는 Job·Result·계보를 변경하지 않습니다.
+0.2.0 Fake는 위 lineage를 재작성하지 않고 별도 payload descriptor와 합성 bytes를 선택한 memory 또는 SQLite store에 결속합니다. durable mode는 Job/Result·계보·시각·output ID를 canonical snapshot으로 보존하며 reopen 시 재발급하지 않습니다. acquisition과 transfer retry는 Job·Result·계보를 변경하지 않습니다.

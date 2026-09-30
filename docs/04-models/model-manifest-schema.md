@@ -20,4 +20,4 @@ Fake Manifest ID는 0.1.0의 `dohavocal.fake-model@0.1.0`과 0.2.0의 `dohavocal
 
 Fake Manifest의 `artifact_checksum`은 실제 model/checkpoint payload가 아니라 Fake Manifest 식별 descriptor의 checksum이며 `artifact_checksum_scope=fake_manifest_descriptor`로 표시합니다. Production Model Artifact checksum으로 사용할 수 없습니다.
 
-TARGET payload entry의 `expected_media_type`은 선택된 Manifest의 `output_formats`와 일치해야 하며 Result source는 exact `model_manifest_id` context에 결속됩니다. payload source descriptor를 다른 Manifest 실행에 재사용할 수 없습니다. 0.1.0 Fake Manifest의 `output_formats=[application/json]`는 metadata 응답 형식입니다. 별도 `dohavocal.fake-model@0.2.0` Manifest는 `output_formats=[audio/wav, application/json]` 및 process-local·Production 인증 미구현 상태를 명시합니다.
+TARGET payload entry의 `expected_media_type`은 선택된 Manifest의 `output_formats`와 일치해야 하며 Result source는 exact `model_manifest_id` context에 결속됩니다. payload source descriptor를 다른 Manifest 실행에 재사용할 수 없습니다. 0.1.0 Fake Manifest의 `output_formats=[application/json]`는 metadata 응답 형식입니다. 별도 `dohavocal.fake-model@0.2.0` Manifest는 `output_formats=[audio/wav, application/json]` 및 선택한 process-local 또는 sqlite-durable persistence·Production 인증 미구현 상태를 명시합니다.

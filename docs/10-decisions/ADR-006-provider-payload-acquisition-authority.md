@@ -36,3 +36,7 @@ DohaVocal이 source와 binary availability를, DohaMusic이 Workspace authorizat
 ## 구현 상태 (2026-09-29)
 
 기존 결정은 유지한다. 0.1.0 호환과 명시적 0.2.0 payload-backed Fake Runtime, deterministic WAV/JSON, binary endpoint와 단일 process replay 검증을 구현했다. 이는 개발용 Foundation이며 restart/reclaim durability, Production authentication·rights 및 실제 AI inference는 미구현이다. 원래 영향 절의 후속 구현 항목 중 Fake 부분만 완료했으며 Production 요건을 완화하지 않는다.
+
+## 구현 상태 (2026-09-30)
+
+기존 결정을 유지한다. ADR-007의 선택적 SQLite persistence foundation은 restart/replay durability를 구현한다. 2026-09-29 기록은 당시 구현 상태이다. Production authentication·rights, 실제 AI 및 운영 retention/deletion은 미구현이다.

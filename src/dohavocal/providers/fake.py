@@ -7,11 +7,18 @@ import io
 import json
 import wave
 from datetime import UTC, datetime
+from functools import wraps
 from typing import Any
 from uuid import uuid4
 
 from pydantic import ValidationError
 
+from dohavocal.application.storage import (
+    ArtifactStore,
+    JobStore,
+    PayloadStore,
+    RuntimeUnitOfWork,
+)
 from dohavocal.artifacts.memory import InMemoryArtifactStore
 from dohavocal.artifacts.payload_memory import InMemoryPayloadStore, replay_conflict
 from dohavocal.config import RuntimeSettings
@@ -50,6 +57,7 @@ from dohavocal.domain.payloads import (
     is_opaque_id,
 )
 from dohavocal.providers.state import InMemoryJobStore
+from dohavocal.providers.unit_of_work import MemoryUnitOfWork
 
 JOB_CLASSES = {
     JobType.VOCAL_GENERATION: VocalGenerationJob,
@@ -59,16 +67,27 @@ JOB_CLASSES = {
 }
 
 
+def transactional(method):
+    @wraps(method)
+    def wrapped(self, *args, **kwargs):
+        with self.unit_of_work.transaction():
+            return method(self, *args, **kwargs)
+
+    return wrapped
+
+
 class FakeVocalProvider:
     """No user audio, model download, subprocess, network call, or GPU execution."""
 
     def __init__(
         self,
         settings: RuntimeSettings | None = None,
-        jobs: InMemoryJobStore | None = None,
-        artifacts: InMemoryArtifactStore | None = None,
-        payloads: InMemoryPayloadStore | None = None,
+        jobs: JobStore | None = None,
+        artifacts: ArtifactStore | None = None,
+        payloads: PayloadStore | None = None,
+        unit_of_work: RuntimeUnitOfWork | None = None,
     ) -> None:
+        self.unit_of_work = unit_of_work or MemoryUnitOfWork()
         self.settings = settings or RuntimeSettings()
         self.jobs = jobs or InMemoryJobStore()
         self.artifacts = artifacts or InMemoryArtifactStore()
@@ -101,7 +120,9 @@ class FakeVocalProvider:
                 "runtime_environment": {
                     "execution": "payload-backed-fake",
                     "gpu": "not-used",
-                    "persistence": "process-local",
+                    "persistence": "sqlite-durable"
+                    if self.settings.runtime_mode == "sqlite"
+                    else "process-local",
                     "authentication": "not-implemented-development-only",
                 },
                 "artifact_checksum": hashlib.sha256(
@@ -116,6 +137,7 @@ class FakeVocalProvider:
     def get_capabilities(self) -> tuple[JobType, ...]:
         return tuple(JobType)
 
+    @transactional
     def create_job(self, request: CreateVocalJobRequest) -> AnyVocalJob:
         self._validate_request(request)
         fingerprint = self._fingerprint(request)
@@ -141,14 +163,18 @@ class FakeVocalProvider:
             model_manifest_id=request.model_manifest_id,
             created_at=now,
         )
+        self.unit_of_work.checkpoint("before_job_insert")
         race_replay = self.jobs.add(job, request, fingerprint)
         if race_replay is not None:
             return race_replay
 
+        self.unit_of_work.checkpoint("after_job_insert")
         outcome = request.settings_snapshot.get("fake_outcome", "succeeded")
         if outcome == "queued":
             return self.jobs.get(job.job_id)
+        self.unit_of_work.checkpoint("before_running")
         running = self.transition(job.job_id, JobStatus.RUNNING, progress_percent=50)
+        self.unit_of_work.checkpoint("after_running")
         if outcome == "running":
             return running
         if outcome == "failed":
@@ -166,8 +192,12 @@ class FakeVocalProvider:
         artifact = self._build_artifact(job.job_id, request)
         if request.api_contract_version == "0.2.0":
             artifact, content = self._with_payload(artifact, request.capability)
-            self.payloads.add(artifact, content)
+        self.unit_of_work.checkpoint("before_result_insert")
         self.artifacts.add(artifact)
+        self.unit_of_work.checkpoint("after_result_insert")
+        if request.api_contract_version == "0.2.0":
+            self.payloads.add(artifact, content)
+        self.unit_of_work.checkpoint("before_succeeded")
         return self.transition(
             job.job_id,
             JobStatus.SUCCEEDED,
@@ -176,12 +206,15 @@ class FakeVocalProvider:
             output_artifact_ids=(artifact.artifact_id,),
         )
 
+    @transactional
     def get_job_status(self, job_id: str) -> AnyVocalJob:
         return self.jobs.get(job_id)
 
+    @transactional
     def cancel_job(self, job_id: str) -> AnyVocalJob:
         return self.transition(job_id, JobStatus.CANCELLED)
 
+    @transactional
     def retry_job(self, job_id: str) -> AnyVocalJob:
         original = self.jobs.get(job_id)
         if original.status not in {JobStatus.FAILED, JobStatus.CANCELLED}:
@@ -199,6 +232,7 @@ class FakeVocalProvider:
         self.jobs.replace(updated)
         return updated
 
+    @transactional
     def get_result(self, job_id: str) -> AnyVocalArtifact:
         job = self.jobs.get(job_id)
         if job.status != JobStatus.SUCCEEDED or not job.output_artifact_ids:
@@ -230,6 +264,7 @@ class FakeVocalProvider:
             self.payloads.verify_result(result)
         return result
 
+    @transactional
     def get_payload_content(
         self, job_id: str, provider_artifact_id: str, source_id: str
     ) -> PayloadContent:
@@ -283,8 +318,12 @@ class FakeVocalProvider:
         return True
 
     def readiness(self) -> bool:
-        return True
+        return self.unit_of_work.readiness()
 
+    def close(self) -> None:
+        self.unit_of_work.close()
+
+    @transactional
     def transition(
         self,
         job_id: str,
