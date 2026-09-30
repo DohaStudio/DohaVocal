@@ -92,7 +92,7 @@ def test_version_negotiation_and_exact_capabilities(client, provider, payload_re
     manifest = client.get("/v1/model-manifests/dohavocal.fake-model@0.2.0").json()
     assert manifest["api_contract_version"] == "0.2.0"
     assert manifest["output_formats"] == ["audio/wav", "application/json"]
-    assert manifest["runtime_environment"]["persistence"] == "process-local"
+    assert manifest["runtime_environment"]["persistence"] == "runtime-configured"
     assert provider.payloads.count() == 0
 
 

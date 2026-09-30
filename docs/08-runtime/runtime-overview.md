@@ -19,3 +19,5 @@ Fake Provider는 기존 metadata-only 0.1.0과 명시적으로 선택한 payload
 TARGET `0.2.0` Runtime은 immutable payload-backed Result와 별도 streaming `GetPayloadContent` port를 제공해야 합니다. JSON transport와 binary transport를 분리하고 같은 Result replay에서 source·checksum·size·media를 바꾸지 않습니다. Fake Runtime은 actual fixture bytes와 binary endpoint를 구현했으며 `?api_contract_version=0.2.0`에만 개발용 payload 지원을 광고합니다. 기본 조회는 0.1.0입니다. restart persistence foundation은 구현했습니다. Production source lifecycle·rights와 authentication은 [미구현]입니다.
 
 SQLite mode의 schema·transaction·interrupted Job 정책은 [ADR-007](../10-decisions/ADR-007-durable-runtime-persistence.md), 실행 근거는 [durable 검증 기록](durable-runtime-persistence-validation.md)을 따른다. cleanup scheduler/endpoint는 없고 committed bytes는 startup에서 삭제하지 않는다. 기존 process-local state는 migration하지 않는다.
+
+Fake Manifest construction은 startup clock 및 memory/SQLite 선택과 독립된 canonical definition을 사용한다. 같은 ID의 전체 document는 restart 후에도 동일하며 `created_at`은 [Manifest publication authority](../04-models/model-manifest-schema.md)를 따른다. Job/Result/payload persistence 경계와 schema는 변경하지 않는다.

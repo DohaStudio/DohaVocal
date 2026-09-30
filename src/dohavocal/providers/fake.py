@@ -56,6 +56,7 @@ from dohavocal.domain.payloads import (
     PayloadSource,
     is_opaque_id,
 )
+from dohavocal.providers.manifests import fake_manifests
 from dohavocal.providers.state import InMemoryJobStore
 from dohavocal.providers.unit_of_work import MemoryUnitOfWork
 
@@ -92,44 +93,15 @@ class FakeVocalProvider:
         self.jobs = jobs or InMemoryJobStore()
         self.artifacts = artifacts or InMemoryArtifactStore()
         self.payloads = payloads or InMemoryPayloadStore()
-        manifest_payload = f"{self.settings.model_manifest_id}:metadata-only".encode()
-        self._manifest = ModelManifest(
-            model_manifest_id=self.settings.model_manifest_id,
-            provider_id=self.settings.provider_id,
-            model_id="fake-vocal-model",
-            model_version="0.1.0",
-            checkpoint_version="not-applicable",
-            model_type="deterministic_metadata_fake",
-            capabilities=self.get_capabilities(),
-            input_formats=("application/json",),
-            output_formats=("application/json",),
-            api_contract_version=self.settings.api_contract_version,
-            license_status="REVIEW_REQUIRED",
-            commercial_usage_status="REVIEW_REQUIRED",
-            recommended_vram=None,
-            runtime_environment={"execution": "metadata-only", "gpu": "not-used"},
-            artifact_checksum=hashlib.sha256(manifest_payload).hexdigest(),
-            created_at=datetime.now(UTC),
-        )
-        self._payload_manifest = self._manifest.model_copy(
-            update={
-                "model_manifest_id": "dohavocal.fake-model@0.2.0",
-                "model_version": "0.2.0",
-                "api_contract_version": "0.2.0",
-                "output_formats": ("audio/wav", "application/json"),
-                "runtime_environment": {
-                    "execution": "payload-backed-fake",
-                    "gpu": "not-used",
-                    "persistence": "sqlite-durable"
-                    if self.settings.runtime_mode == "sqlite"
-                    else "process-local",
-                    "authentication": "not-implemented-development-only",
-                },
-                "artifact_checksum": hashlib.sha256(
-                    b"dohavocal.fake-model@0.2.0:payload-backed-fake"
-                ).hexdigest(),
-            }
-        )
+        if (
+            self.settings.model_manifest_id != "dohavocal.fake-model@0.1.0"
+            or self.settings.api_contract_version != "0.1.0"
+        ):
+            raise ContractVersionError(
+                "MANIFEST_CONFIGURATION_CONFLICT",
+                "Fake Manifest identity는 Runtime 설정으로 변경할 수 없습니다.",
+            )
+        self._manifest, self._payload_manifest = fake_manifests()
 
     def supported_contract_versions(self) -> tuple[str, ...]:
         return ("0.1.0", "0.2.0")

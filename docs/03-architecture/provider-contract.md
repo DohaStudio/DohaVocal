@@ -67,3 +67,5 @@ in-memory lock은 단일 Provider process 안의 동시 생성에서 duplicate J
 전체 route 수에는 FastAPI의 OpenAPI·문서 route 4개가 포함됩니다. DohaVocal API route와 OpenAPI operation은 기존 Surface와 GetPayloadContent를 합한 10개입니다.
 
 기본 capability 조회는 0.1.0을 반환합니다. 명시적 `?api_contract_version=0.2.0` 조회 후 CreateJob의 version과 전용 Manifest를 지정합니다. GetResult는 Job 생성 때 고정한 버전을 사용합니다. 추가 협상 header나 session 상태는 없습니다.
+
+동일 Model Manifest ID 조회는 `created_at`을 포함한 immutable document를 반환한다. Fake publication 시각과 설정 경계는 [Model Manifest schema](../04-models/model-manifest-schema.md)를 따른다. process restart와 storage adapter 선택은 새 model identity를 생성하거나 기존 document를 변경하는 근거가 아니다.
